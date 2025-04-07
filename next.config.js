@@ -10,6 +10,12 @@ const config = {
 		ppr: true,
 		dynamicIO: true,
 	},
+	eslint: {
+		ignoreDuringBuilds: true,
+	},
+	typescript: {
+		ignoreBuildErrors: true,
+	},
 };
 
 export default config;

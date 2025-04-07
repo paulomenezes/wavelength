@@ -4,15 +4,17 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"build": "next build",
+		"build": "pnpm run codegen && next build",
 		"check": "biome check .",
 		"check:unsafe": "biome check --write --unsafe .",
 		"check:write": "biome check --write .",
-		"dev": "next dev --turbo --port 3001",
+		"dev": "pnpm run codegen && next dev --turbo --port 3001",
 		"preview": "next build && next start",
 		"start": "next start",
-		"typecheck": "tsc --noEmit",
-		"codegen": "graphql-codegen --config codegen.ts"
+		"tsc": "tsc --noEmit",
+		"codegen": "graphql-codegen --config codegen.ts",
+		"lint": "biome lint .",
+		"lint:fix": "biome lint --write ."
 	},
 	"dependencies": {
 		"@clerk/nextjs": "^6.13.0",
@@ -45,6 +47,7 @@
 		"@types/react": "^19.0.0",
 		"@types/react-dom": "^19.0.0",
 		"graphql-tag": "^2.12.6",
+		"lefthook": "^1.11.7",
 		"postcss": "^8.5.3",
 		"tailwindcss": "^4.0.15",
 		"typescript": "^5.8.2"

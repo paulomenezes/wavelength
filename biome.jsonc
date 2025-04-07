@@ -5,12 +5,15 @@
 		"clientKind": "git",
 		"useIgnoreFile": true
 	},
-	"files": { "ignoreUnknown": false, "ignore": ["./src/graphql/generated.ts"] },
+	"files": { "ignoreUnknown": false, "ignore": [] },
 	"formatter": { "enabled": true },
 	"organizeImports": { "enabled": true },
 	"linter": {
 		"enabled": true,
 		"rules": {
+			"style": {
+				"useImportType": "error"
+			},
 			"nursery": {
 				"useSortedClasses": {
 					"level": "warn",
