@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { LatestPost } from "~/app/_components/post";
+import { Button } from "~/components/ui/button";
 import { HydrateClient, api } from "~/trpc/server";
 
 export default async function Home() {
@@ -46,6 +47,8 @@ export default async function Home() {
 					</div>
 
 					<LatestPost />
+
+					<Button>Click me</Button>
 				</div>
 			</main>
 		</HydrateClient>
