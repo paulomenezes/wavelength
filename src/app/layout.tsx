@@ -1,6 +1,14 @@
 import "~/styles/globals.css";
 
 import type { Metadata } from "next";
+import {
+	ClerkProvider,
+	SignInButton,
+	SignUpButton,
+	SignedIn,
+	SignedOut,
+	UserButton,
+} from "@clerk/nextjs";
 import { Geist } from "next/font/google";
 
 import { TRPCReactProvider } from "~/trpc/react";
@@ -18,12 +26,25 @@ const geist = Geist({
 
 export default function RootLayout({
 	children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{
+	children: React.ReactNode;
+}>) {
 	return (
-		<html lang="en" className={`${geist.variable}`}>
-			<body>
-				<TRPCReactProvider>{children}</TRPCReactProvider>
-			</body>
-		</html>
+		<ClerkProvider>
+			<html lang="en">
+				<body className={`${geist.variable} antialiased`}>
+					<header className="flex h-16 items-center justify-end gap-4 p-4">
+						<SignedOut>
+							<SignInButton />
+							<SignUpButton />
+						</SignedOut>
+						<SignedIn>
+							<UserButton />
+						</SignedIn>
+					</header>
+					<TRPCReactProvider>{children}</TRPCReactProvider>
+				</body>
+			</html>
+		</ClerkProvider>
 	);
 }
