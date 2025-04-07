@@ -8,10 +8,11 @@
 		"check": "biome check .",
 		"check:unsafe": "biome check --write --unsafe .",
 		"check:write": "biome check --write .",
-		"dev": "next dev --turbo",
+		"dev": "next dev --turbo --port 3001",
 		"preview": "next build && next start",
 		"start": "next start",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"codegen": "graphql-codegen --config codegen.ts"
 	},
 	"dependencies": {
 		"@clerk/nextjs": "^6.13.0",
@@ -23,8 +24,9 @@
 		"@trpc/server": "^11.0.0",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
+		"graphql-request": "^7.1.2",
 		"lucide-react": "^0.487.0",
-		"next": "^15.2.3",
+		"next": "15.3.0-canary.41",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
 		"server-only": "^0.0.1",
@@ -35,10 +37,14 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
+		"@graphql-codegen/cli": "5.0.5",
+		"@graphql-codegen/client-preset": "4.8.0",
+		"@graphql-codegen/typescript-graphql-request": "^6.2.0",
 		"@tailwindcss/postcss": "^4.0.15",
 		"@types/node": "^20.14.10",
 		"@types/react": "^19.0.0",
 		"@types/react-dom": "^19.0.0",
+		"graphql-tag": "^2.12.6",
 		"postcss": "^8.5.3",
 		"tailwindcss": "^4.0.15",
 		"typescript": "^5.8.2"

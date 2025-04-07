@@ -1,5 +1,5 @@
 import { z } from "zod";
-
+import { podcastClient } from "~/lib/podcast-client";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 // Mocked DB
@@ -26,6 +26,12 @@ export const postRouter = createTRPCRouter({
 	create: publicProcedure
 		.input(z.object({ name: z.string().min(1) }))
 		.mutation(async ({ input }) => {
+			const response = await podcastClient.GetPodcastSeries({
+				name: input.name,
+			});
+
+			console.log(response);
+
 			const post: Post = {
 				id: posts.length + 1,
 				name: input.name,

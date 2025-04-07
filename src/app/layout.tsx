@@ -11,6 +11,8 @@ import {
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 
+import { Suspense } from "react";
+
 import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
@@ -30,21 +32,23 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<ClerkProvider>
-			<html lang="en">
-				<body className={`${geist.variable} antialiased`}>
-					<header className="flex h-16 items-center justify-end gap-4 p-4">
-						<SignedOut>
-							<SignInButton />
-							<SignUpButton />
-						</SignedOut>
-						<SignedIn>
-							<UserButton />
-						</SignedIn>
-					</header>
-					<TRPCReactProvider>{children}</TRPCReactProvider>
-				</body>
-			</html>
-		</ClerkProvider>
+		<Suspense fallback={<div>Loading...</div>}>
+			<ClerkProvider dynamic>
+				<html lang="en">
+					<body className={`${geist.variable} antialiased`}>
+						<header className="flex h-16 items-center justify-end gap-4 p-4">
+							<SignedOut>
+								<SignInButton />
+								<SignUpButton />
+							</SignedOut>
+							<SignedIn>
+								<UserButton />
+							</SignedIn>
+						</header>
+						<TRPCReactProvider>{children}</TRPCReactProvider>
+					</body>
+				</html>
+			</ClerkProvider>
+		</Suspense>
 	);
 }
