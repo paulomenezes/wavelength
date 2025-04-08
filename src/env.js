@@ -12,6 +12,9 @@ export const env = createEnv({
 		PODCAST_API_URL: z.string(),
 		PODCAST_API_USER_ID: z.string(),
 		PODCAST_API_KEY: z.string(),
+		SUPABASE_URL: z.string(),
+		SUPABASE_ANON_KEY: z.string(),
+		SUPABASE_SERVICE_ROLE: z.string(),
 	},
 
 	/**
@@ -35,6 +38,9 @@ export const env = createEnv({
 		PODCAST_API_URL: process.env.PODCAST_API_URL,
 		PODCAST_API_USER_ID: process.env.PODCAST_API_USER_ID,
 		PODCAST_API_KEY: process.env.PODCAST_API_KEY,
+		SUPABASE_URL: process.env.SUPABASE_URL,
+		SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+		SUPABASE_SERVICE_ROLE: process.env.SUPABASE_SERVICE_ROLE,
 	},
 	/**
 	 * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
