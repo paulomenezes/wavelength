@@ -1,18 +1,10 @@
 import "~/styles/globals.css";
 
-import {
-	ClerkProvider,
-	SignInButton,
-	SignUpButton,
-	SignedIn,
-	SignedOut,
-	UserButton,
-} from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
-
 import { Suspense } from "react";
-
+import { NavBar } from "~/components/nav-bar";
 import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
@@ -36,16 +28,13 @@ export default function RootLayout({
 			<ClerkProvider dynamic>
 				<html lang="en">
 					<body className={`${geist.variable} antialiased`}>
-						<header className="flex h-16 items-center justify-end gap-4 p-4">
-							<SignedOut>
-								<SignInButton />
-								<SignUpButton />
-							</SignedOut>
-							<SignedIn>
-								<UserButton />
-							</SignedIn>
-						</header>
-						<TRPCReactProvider>{children}</TRPCReactProvider>
+						<TRPCReactProvider>
+							<div className="min-h-screen">
+								<NavBar />
+
+								{children}
+							</div>
+						</TRPCReactProvider>
 					</body>
 				</html>
 			</ClerkProvider>

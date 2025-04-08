@@ -16,6 +16,13 @@ const config = {
 	typescript: {
 		ignoreBuildErrors: true,
 	},
+	images: {
+		remotePatterns: [
+			{
+				hostname: "**",
+			},
+		],
+	},
 };
 
 export default config;

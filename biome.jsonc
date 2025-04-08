@@ -11,6 +11,9 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
+			"security": {
+				"noDangerouslySetInnerHtml": "off"
+			},
 			"style": {
 				"useImportType": "error"
 			},

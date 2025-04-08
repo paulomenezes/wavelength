@@ -7,6 +7,11 @@ const config: CodegenConfig = {
 	generates: {
 		"src/graphql/generated.ts": {
 			plugins: [
+				{
+					add: {
+						content: "// @ts-nocheck",
+					},
+				},
 				"typescript",
 				"typescript-operations",
 				"typescript-graphql-request",
