@@ -9,7 +9,7 @@ export default function Home() {
 			<CategoryHeader />
 
 			<main className="container mx-auto space-y-12 bg-white px-4 py-6">
-				<Suspense>
+				<Suspense fallback={<div>Loading...</div>}>
 					<HomeContent />
 				</Suspense>
 			</main>

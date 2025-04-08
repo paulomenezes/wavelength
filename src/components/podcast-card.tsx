@@ -1,3 +1,4 @@
+import type { Palette } from "@vibrant/color";
 import Image from "next/image";
 import Link from "next/link";
 import { Vibrant } from "node-vibrant/node";
@@ -8,9 +9,15 @@ interface PodcastCardProps {
 }
 
 export async function PodcastCard({ podcast }: PodcastCardProps) {
-	const vibrant = podcast.imageUrl
-		? await new Vibrant(podcast.imageUrl).getPalette()
-		: null;
+	let vibrant: Palette | null = null;
+
+	try {
+		if (podcast.imageUrl) {
+			vibrant = await new Vibrant(podcast.imageUrl).getPalette();
+		}
+	} catch (error) {
+		console.error(error);
+	}
 
 	return (
 		<Link href={`/podcast/${podcast.uuid}`} className="group">
