@@ -34,7 +34,10 @@ export function CategoryFilterCard({
 					isSelected ? "ring-1 ring-primary" : "",
 				)}
 				onClick={() =>
-					setPodcastSearch({ group: isSelected ? null : episodeGroup.key })
+					setPodcastSearch({
+						group: isSelected ? null : episodeGroup.key,
+						currentPage: 1,
+					})
 				}
 			>
 				<div className="flex flex-col">
@@ -49,7 +52,7 @@ export function CategoryFilterCard({
 						</h3>
 					</div>
 
-					{episodeGroup.count && (
+					{!!episodeGroup.count && (
 						<Badge variant="secondary" className="mt-2 w-fit">
 							{episodeGroup.count} episodes
 						</Badge>

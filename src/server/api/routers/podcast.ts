@@ -6,6 +6,7 @@ import {
 	getColors,
 	getEpisodeById,
 	getPodcastById,
+	getPodcastGroups,
 	getPodcastsByGenre,
 	getTrendingPodcasts,
 	refreshPodcast,
@@ -52,5 +53,10 @@ export const podcastRouter = createTRPCRouter({
 		.input(z.object({ podcastId: z.string(), url: z.string() }))
 		.query(async ({ input }) => {
 			return saveColors(input.podcastId, input.url);
+		}),
+	getPodcastGroups: publicProcedure
+		.input(z.object({ podcastId: z.string() }))
+		.query(async ({ input }) => {
+			return getPodcastGroups(input.podcastId);
 		}),
 });

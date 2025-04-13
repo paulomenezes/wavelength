@@ -36,7 +36,7 @@ export default function RootLayout({
 						<TRPCReactProvider>
 							<NuqsAdapter>
 								<AudioPlayerProvider>
-									<div className="min-h-screen pb-36">
+									<div className="min-h-screen pb-72">
 										<NavBar />
 
 										{children}

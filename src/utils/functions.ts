@@ -12,7 +12,7 @@ export function formatDuration(duration: number) {
 	return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
-export function getDateDistance(date: string | number) {
+export function getDateDistance(date: Date | string | number) {
 	const then = new Date(date);
 
 	return formatDistanceToNow(then, {

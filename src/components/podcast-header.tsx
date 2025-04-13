@@ -15,7 +15,7 @@ export function PodcastHeader({
 	children: React.ReactNode;
 	imageUrl?: string | null;
 	podcastId?: string;
-	colors?: PodcastColors;
+	colors?: PodcastColors | null;
 }) {
 	const { data } = api.podcast.saveColors.useQuery(
 		{
@@ -38,9 +38,10 @@ export function PodcastHeader({
 
 	return (
 		<div
-			className="text-white"
+			className="text-white transition-all"
 			style={{
-				backgroundColor: colors?.darkMuted ?? data?.darkMuted ?? undefined,
+				backgroundColor:
+					colors?.darkMuted ?? data?.darkMuted ?? "var(--primary)",
 			}}
 		>
 			<div className="mx-auto max-w-[96rem] px-4 py-8">

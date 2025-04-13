@@ -2,14 +2,14 @@ import type { Person } from "~/graphql/generated";
 import type { RSSTranscript } from "./rss-transcript";
 
 export type RSSEpisode = {
-	id: string | number;
+	id: string | number | bigint;
 	uuid: string;
 	title: string | null;
 	description: string | null;
 	link: string | null;
 	author?: string | null;
-	published: string | number | null;
-	created: string | number | null;
+	published: Date | string | number | null;
+	created: Date | string | number | null;
 	category: string[] | null;
 	content: string | null;
 	enclosures: Array<{

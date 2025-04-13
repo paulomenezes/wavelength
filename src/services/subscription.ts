@@ -5,14 +5,11 @@ export async function getSubscriptions(userId: string) {
 	"use cache";
 	cacheTag(`subscription:${userId}`);
 
-	const { data, error } = await databaseClient
-		.from("subscriptions")
-		.select("*")
-		.eq("user_id", userId);
-
-	if (error) {
-		throw new Error(error.message);
-	}
+	const data = await databaseClient.subscriptions.findMany({
+		where: {
+			user_id: userId,
+		},
+	});
 
 	return data;
 }
@@ -25,25 +22,15 @@ export async function isSubscribed(
 	"use cache";
 	cacheTag(`subscription:${userId}:${podcastUuid}`);
 
-	let query = databaseClient
-		.from("subscriptions")
-		.select("*")
-		.eq("user_id", userId)
-		.eq("podcast_uuid", podcastUuid);
+	const data = await databaseClient.subscriptions.count({
+		where: {
+			user_id: userId,
+			podcast_uuid: podcastUuid,
+			group_key: groupKey ?? null,
+		},
+	});
 
-	if (groupKey) {
-		query = query.eq("group_key", groupKey);
-	} else {
-		query = query.is("group_key", null);
-	}
-
-	const { data, error } = await query;
-
-	if (error) {
-		throw new Error(error.message);
-	}
-
-	return data.length > 0;
+	return data > 0;
 }
 
 export async function createSubscription(
@@ -51,20 +38,16 @@ export async function createSubscription(
 	podcastUuid: string,
 	groupKey?: string,
 ) {
-	const { data, error } = await databaseClient.from("subscriptions").insert({
-		user_id: userId,
-		podcast_uuid: podcastUuid,
-		group_key: groupKey ?? null,
+	await databaseClient.subscriptions.create({
+		data: {
+			user_id: userId,
+			podcast_uuid: podcastUuid,
+			group_key: groupKey ?? null,
+		},
 	});
 
 	revalidateTag(`subscription:${userId}`);
 	revalidateTag(`subscription:${userId}:${podcastUuid}`);
-
-	if (error) {
-		throw new Error(error.message);
-	}
-
-	return data;
 }
 
 export async function deleteSubscription(
@@ -72,26 +55,14 @@ export async function deleteSubscription(
 	podcastUuid: string,
 	groupKey?: string,
 ) {
-	let query = databaseClient
-		.from("subscriptions")
-		.delete()
-		.eq("user_id", userId)
-		.eq("podcast_uuid", podcastUuid);
-
-	if (groupKey) {
-		query = query.eq("group_key", groupKey);
-	} else {
-		query = query.is("group_key", null);
-	}
-
-	const { data, error } = await query;
+	await databaseClient.subscriptions.deleteMany({
+		where: {
+			user_id: userId,
+			podcast_uuid: podcastUuid,
+			group_key: groupKey ?? null,
+		},
+	});
 
 	revalidateTag(`subscription:${userId}`);
 	revalidateTag(`subscription:${userId}:${podcastUuid}`);
-
-	if (error) {
-		throw new Error(error.message);
-	}
-
-	return data;
 }

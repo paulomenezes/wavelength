@@ -1,0 +1,259 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model chapters {
+  id           BigInt    @id @default(autoincrement())
+  episode_uuid String    @db.Uuid
+  title        String
+  start_time   Int
+  end_time     Int
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([episode_uuid], map: "idx_chapters_episode_uuid")
+}
+
+model favorites {
+  id           BigInt    @id @default(autoincrement())
+  user_id      String    @db.VarChar(255)
+  episode_uuid String    @db.Uuid
+  favorited_at DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([episode_uuid], map: "idx_favorites_episode_uuid")
+  @@index([user_id], map: "idx_favorites_user_id")
+  @@index([user_id, episode_uuid], map: "idx_favorites_user_id_episode_uuid")
+}
+
+model listening_history {
+  id           BigInt    @id @default(autoincrement())
+  user_id      String    @db.VarChar(255)
+  podcast_uuid String    @db.Uuid
+  episode_uuid String    @db.Uuid
+  listened_at  DateTime? @default(now()) @db.Timestamptz(6)
+  progress     Float
+  duration     Float
+
+  @@index([episode_uuid], map: "idx_listening_history_episode_uuid")
+  @@index([podcast_uuid], map: "idx_listening_history_podcast_uuid")
+  @@index([user_id], map: "idx_listening_history_user_id")
+  @@index([user_id, podcast_uuid], map: "idx_listening_history_user_id_podcast_uuid")
+  @@index([user_id, podcast_uuid, episode_uuid], map: "idx_listening_history_user_id_podcast_uuid_episode_uuid")
+}
+
+model people {
+  id                     BigInt                   @default(autoincrement())
+  uuid                   String                   @id
+  name                   String
+  image_url              String?
+  url                    String?
+  role                   String?
+  created_at             DateTime?                @default(now()) @db.Timestamp(6)
+  podcast_episode_people podcast_episode_people[]
+  podcast_people         podcast_people[]
+}
+
+model podcast_episode_enclosures {
+  id               BigInt            @id @default(autoincrement())
+  episode_uuid     String?
+  url              String
+  type             String?
+  length           Int?
+  created_at       DateTime?         @default(now()) @db.Timestamp(6)
+  podcast_episodes podcast_episodes? @relation(fields: [episode_uuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([episode_uuid], map: "idx_podcast_episode_enclosures_episode_uuid")
+}
+
+model podcast_episode_people {
+  id               BigInt            @id @default(autoincrement())
+  episode_uuid     String?
+  person_uuid      String
+  created_at       DateTime?         @default(now()) @db.Timestamp(6)
+  podcast_episodes podcast_episodes? @relation(fields: [episode_uuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+  people           people            @relation(fields: [person_uuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([episode_uuid], map: "idx_podcast_episode_people_episode_uuid")
+  @@index([person_uuid], map: "idx_podcast_episode_people_person_uuid")
+}
+
+model podcast_episode_transcripts {
+  id               BigInt            @id @default(autoincrement())
+  episode_uuid     String?
+  url              String?
+  rel              String?
+  type             String?
+  language         String?
+  created_at       DateTime?         @default(now()) @db.Timestamp(6)
+  podcast_episodes podcast_episodes? @relation(fields: [episode_uuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([episode_uuid], map: "idx_podcast_episode_transcripts_episode_uuid")
+}
+
+model podcast_episodes {
+  id                          BigInt                        @default(autoincrement())
+  uuid                        String                        @id
+  title                       String
+  description                 String?
+  link                        String?
+  author                      String?
+  published                   DateTime?                     @db.Timestamp(6)
+  created                     DateTime?                     @default(now()) @db.Timestamp(6)
+  category                    String[]
+  content                     String?
+  content_encoded             String?
+  podcast_transcript          String?
+  itunes_summary              String?
+  itunes_author               String?
+  itunes_explicit             String?
+  itunes_duration             String?
+  itunes_season               String?
+  itunes_episode              String?
+  itunes_episode_type         String?
+  itunes_image                String?
+  created_at                  DateTime?                     @default(now()) @db.Timestamp(6)
+  updated_at                  DateTime?                     @default(now()) @db.Timestamp(6)
+  podcast_uuid                String?
+  podcast_episode_enclosures  podcast_episode_enclosures[]
+  podcast_episode_people      podcast_episode_people[]
+  podcast_episode_transcripts podcast_episode_transcripts[]
+
+  @@index([created], map: "idx_podcast_episodes_created")
+  @@index([published], map: "idx_podcast_episodes_published")
+}
+
+model podcast_people {
+  id             BigInt         @id @default(autoincrement())
+  podcast_uuid   String         @db.Uuid
+  person_uuid    String
+  created_at     DateTime?      @default(now()) @db.Timestamp(6)
+  people         people         @relation(fields: [person_uuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+  podcast_series podcast_series @relation(fields: [podcast_uuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([person_uuid], map: "idx_podcast_people_person_uuid")
+  @@index([podcast_uuid], map: "idx_podcast_people_podcast_uuid")
+}
+
+model podcast_series {
+  id                     BigInt           @default(autoincrement())
+  uuid                   String           @id(map: "podcastseries_pkey") @db.Uuid
+  created_at             DateTime         @default(now()) @db.Timestamptz(6)
+  updated_at             DateTime?        @db.Timestamptz(6)
+  source                 String?          @db.VarChar(255)
+  hash                   String?          @unique(map: "podcastseries_hash_key") @db.VarChar(255)
+  hash_timestamp         BigInt?
+  genres_hash            String?          @db.VarChar(255)
+  itunes_info_hash       String?          @db.VarChar(255)
+  date_published         DateTime?        @db.Timestamptz(6)
+  name                   String?          @db.VarChar(255)
+  description            String?
+  image_url              String?
+  itunes_id              BigInt?          @unique(map: "podcastseries_itunes_id_key")
+  series_type            String?          @db.VarChar(255)
+  copyright              String?
+  country_of_origin      String?          @db.VarChar(255)
+  language               String?          @db.VarChar(255)
+  website_url            String?
+  author_name            String?          @db.VarChar(255)
+  content_type           String?          @db.VarChar(255)
+  rss_url                String?          @unique(map: "podcastseries_rss_url_key")
+  rss_owner_name         String?          @db.VarChar(255)
+  rss_owner_public_email String?
+  is_explicit_content    Boolean?
+  is_completed           Boolean?
+  is_blocked             Boolean?
+  children_hash          String?          @db.VarChar(255)
+  colors_dark_muted      String?
+  colors_dark_vibrant    String?
+  colors_light_muted     String?
+  colors_light_vibrant   String?
+  colors_muted           String?
+  colors_vibrant         String?
+  podcast_people         podcast_people[]
+}
+
+model podcast_colors {
+  id                   BigInt    @id @default(autoincrement())
+  podcast_uuid         String    @db.Uuid
+  created_at           DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime? @db.Timestamptz(6)
+  colors_dark_muted    String?
+  colors_dark_vibrant  String?
+  colors_light_muted   String?
+  colors_light_vibrant String?
+  colors_muted         String?
+  colors_vibrant       String?
+
+  @@index([podcast_uuid], map: "idx_podcast_colors_podcast_uuid")
+}
+
+model podcast_user_settings {
+  id                  BigInt    @id @default(autoincrement())
+  user_id             String    @db.VarChar(255)
+  podcast_uuid        String    @db.Uuid
+  playback_speed      Decimal?  @default(1.0) @db.Decimal(3, 2)
+  forward_skip        Int?      @default(30)
+  back_skip           Int?      @default(30)
+  continuous_playback Boolean?  @default(true)
+  created_at          DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([podcast_uuid], map: "idx_podcast_user_settings_podcast_uuid")
+  @@index([user_id], map: "idx_podcast_user_settings_user_id")
+  @@index([user_id, podcast_uuid], map: "idx_podcast_user_settings_user_id_podcast_uuid")
+}
+
+model stop_words {
+  word String @id
+}
+
+model subscriptions {
+  id            BigInt    @id @default(autoincrement())
+  user_id       String    @db.VarChar(255)
+  podcast_uuid  String    @db.Uuid
+  subscribed_at DateTime? @default(now()) @db.Timestamptz(6)
+  group_key     String?
+
+  @@index([podcast_uuid], map: "idx_subscriptions_podcast_uuid")
+  @@index([user_id], map: "idx_subscriptions_user_id")
+  @@index([user_id, podcast_uuid], map: "idx_subscriptions_user_id_podcast_uuid")
+}
+
+model user_queue {
+  id           BigInt    @id @default(autoincrement())
+  user_id      String    @db.VarChar(255)
+  episode_uuid String    @db.Uuid
+  position     Int
+  added_at     DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([episode_uuid], map: "idx_user_queue_episode_uuid")
+  @@index([user_id], map: "idx_user_queue_user_id")
+  @@index([user_id, episode_uuid], map: "idx_user_queue_user_id_episode_uuid")
+}
+
+model user_settings {
+  id                  BigInt    @id @default(autoincrement())
+  user_id             String    @db.VarChar(255)
+  playback_speed      Decimal?  @default(1.0) @db.Decimal(3, 2)
+  forward_skip        Int?      @default(30)
+  back_skip           Int?      @default(30)
+  continuous_playback Boolean?  @default(true)
+  created_at          DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([user_id], map: "idx_user_settings_user_id")
+}
+
+enum group_rule_type {
+  word
+  weekday
+}
+
+enum subscription_type {
+  podcast
+  group
+}

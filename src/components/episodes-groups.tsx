@@ -12,21 +12,31 @@ import {
 import type { PodcastSeries } from "~/graphql/generated";
 import { useIsMobile } from "~/hooks/use-mobile";
 import { usePodcastSearch } from "~/hooks/use-podcast-search";
+import { api } from "~/trpc/react";
 import type { GroupedEpisodes } from "~/types/group-episodes";
 import { CategoryFilterCard } from "./episode-group";
 import { Button } from "./ui/button";
 
 export function EpisodesGroups({
-	groupedEpisodes,
 	podcast,
 }: {
-	groupedEpisodes: GroupedEpisodes[];
 	podcast: PodcastSeries;
 }) {
 	const isMobile = useIsMobile();
 	const [{ group }, setPodcastSearch] = usePodcastSearch();
 
-	if (groupedEpisodes.length === 0) {
+	const { data: groupedEpisodes } = api.podcast.getPodcastGroups.useQuery(
+		{
+			podcastId: podcast.uuid ?? "",
+		},
+		{
+			enabled: !!podcast.uuid,
+		},
+	);
+
+	console.log(groupedEpisodes);
+
+	if (!groupedEpisodes || groupedEpisodes?.length === 0) {
 		return null;
 	}
 

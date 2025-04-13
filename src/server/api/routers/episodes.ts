@@ -17,9 +17,22 @@ export const episodesRouter = createTRPCRouter({
 			await saveEpisodes(input.episodes, input.podcastId, input.people);
 		}),
 	getEpisodes: publicProcedure
-		.input(z.object({ podcastId: z.string() }))
+		.input(
+			z.object({
+				podcastId: z.string(),
+				search: z.string().optional(),
+				group: z.string().optional(),
+				limit: z.number().optional(),
+				offset: z.number().optional(),
+			}),
+		)
 		.query(async ({ input }) => {
-			console.log("#### getEpisodes");
-			return getEpisodesByPodcastId(input.podcastId);
+			return getEpisodesByPodcastId(
+				input.podcastId,
+				input.limit,
+				input.offset,
+				input.search,
+				input.group,
+			);
 		}),
 });

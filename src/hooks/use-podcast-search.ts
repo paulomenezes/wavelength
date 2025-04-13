@@ -1,10 +1,8 @@
 "use client";
 
-import { parseAsString, useQueryStates } from "nuqs";
+import { useQueryStates } from "nuqs";
+import { podcastSearchParams } from "~/lib/podcast-search";
 
 export function usePodcastSearch() {
-	return useQueryStates({
-		search: parseAsString.withDefault(""),
-		group: parseAsString.withDefault(""),
-	});
+	return useQueryStates(podcastSearchParams);
 }
