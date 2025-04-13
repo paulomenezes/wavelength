@@ -15,6 +15,11 @@ export const env = createEnv({
 		SUPABASE_URL: z.string(),
 		SUPABASE_ANON_KEY: z.string(),
 		SUPABASE_SERVICE_ROLE: z.string(),
+		REDIS_KEY: z.string(),
+		UPSTASH_VECTOR_URL: z.string(),
+		UPSTASH_VECTOR_TOKEN: z.string(),
+		ELEVENLABS_API_KEY: z.string(),
+		OPENAI_API_KEY: z.string(),
 	},
 
 	/**
@@ -41,6 +46,11 @@ export const env = createEnv({
 		SUPABASE_URL: process.env.SUPABASE_URL,
 		SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
 		SUPABASE_SERVICE_ROLE: process.env.SUPABASE_SERVICE_ROLE,
+		REDIS_KEY: process.env.REDIS_KEY,
+		UPSTASH_VECTOR_URL: process.env.UPSTASH_VECTOR_URL,
+		UPSTASH_VECTOR_TOKEN: process.env.UPSTASH_VECTOR_TOKEN,
+		ELEVENLABS_API_KEY: process.env.ELEVENLABS_API_KEY,
+		OPENAI_API_KEY: process.env.OPENAI_API_KEY,
 	},
 	/**
 	 * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

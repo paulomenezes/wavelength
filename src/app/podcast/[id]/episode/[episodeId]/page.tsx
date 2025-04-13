@@ -13,17 +13,28 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { api } from "~/trpc/server";
-import { formatDuration, getDateDistance } from "~/utils/functions";
+import type { RSSPodcast } from "~/types/rss-podcast";
+import { getDateDistance } from "~/utils/functions";
 
 export default async function EpisodePage({
 	params,
 }: { params: Promise<{ id: string; episodeId: string }> }) {
 	const { id, episodeId } = await params;
 
-	const [podcast, episode] = await Promise.all([
-		api.podcast.getPodcastById({ uuid: id }),
-		api.podcast.getEpisodeById({ uuid: episodeId }),
-	]);
+	const podcast = await api.podcast.getPodcastById({ uuid: id });
+
+	if (!podcast) {
+		return <div>Podcast not found</div>;
+	}
+
+	let rss: RSSPodcast | null = null;
+	if (podcast.rssUrl) {
+		rss = await api.podcast.parseRSSFeed({
+			url: podcast.rssUrl,
+		});
+	}
+
+	const episode = rss?.items?.find((episode) => episode.id === episodeId);
 
 	if (!episode || !podcast) {
 		return (
@@ -56,11 +67,11 @@ export default async function EpisodePage({
 					</Link>
 
 					<div className="flex flex-col gap-6 md:flex-row">
-						{(episode.imageUrl ?? podcast.imageUrl) && (
+						{(episode.itunes_image ?? podcast.imageUrl) && (
 							<div className="shrink-0">
 								<Image
-									src={episode.imageUrl ?? podcast.imageUrl ?? ""}
-									alt={episode.name ?? ""}
+									src={episode.itunes_image ?? podcast.imageUrl ?? ""}
+									alt={episode.title ?? ""}
 									width={300}
 									height={300}
 									className="aspect-square rounded-md object-cover"
@@ -70,22 +81,24 @@ export default async function EpisodePage({
 
 						<div>
 							<div className="mb-2 flex items-center gap-2 text-gray-300 text-sm">
-								{episode.duration && (
+								{episode.itunes_duration && (
 									<span className="flex items-center gap-1">
 										<Clock className="h-4 w-4" />
-										{formatDuration(episode.duration)}
+										{episode.itunes_duration}
 									</span>
 								)}
 								<span>•</span>
-								{episode.datePublished && (
+								{episode.published && (
 									<span className="flex items-center gap-1">
 										<CalendarIcon className="h-4 w-4" />
-										{getDateDistance(episode.datePublished)}
+										{getDateDistance(episode.published)}
 									</span>
 								)}
 							</div>
 
-							<h1 className="mb-4 font-bold text-3xl">{episode.name}</h1>
+							<h1 className="mb-4 max-w-2xl font-bold text-3xl">
+								{episode.title}
+							</h1>
 
 							{/* <p className="mb-6 max-w-2xl text-gray-300 line-clamp-3">
 								{episode.description}
@@ -206,7 +219,7 @@ export default async function EpisodePage({
 									Episode Description
 								</h2>
 								<div
-									className="text-gray-700"
+									className="text-gray-700 [&_a]:underline"
 									dangerouslySetInnerHTML={{
 										__html: episode.description ?? "",
 									}}

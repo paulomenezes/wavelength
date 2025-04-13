@@ -1,4 +1,7 @@
+import { episodesRouter } from "~/server/api/routers/episodes";
 import { podcastRouter } from "~/server/api/routers/podcast";
+import { subscriptionRouter } from "~/server/api/routers/subscription";
+import { transcriptionRouter } from "~/server/api/routers/transcription";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -8,6 +11,9 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
 	podcast: podcastRouter,
+	episodes: episodesRouter,
+	transcription: transcriptionRouter,
+	subscription: subscriptionRouter,
 });
 
 // export type definition of API

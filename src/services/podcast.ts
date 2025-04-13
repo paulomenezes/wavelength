@@ -1,19 +1,42 @@
-import { Country, type Genre } from "~/graphql/generated";
-import { TaddyType } from "~/graphql/generated";
-import { podcastClient } from "~/lib/podcast-client";
+import type { Genre, PodcastSeries } from "~/graphql/generated";
+import { podcastClient } from "~/lib/client-podcast";
+import { redisClient } from "~/lib/client-redis";
+import { parseXMLFromURL } from "~/lib/parse-rss-xml";
 import { nonNullable } from "~/utils/functions";
+import { saveEpisodes } from "./episodes";
+import { Vibrant } from "node-vibrant/node";
 
-export async function getTrendingPodcasts() {
+export async function getTrendingPodcasts(): Promise<PodcastSeries[]> {
 	"use cache";
 
-	const response = await podcastClient.GetTopChartsByCountry({
-		taddyType: TaddyType.Podcastseries,
-		country: Country.UnitedStatesOfAmerica,
-	});
+	const response = await redisClient.get("trending_podcasts");
 
-	return (
-		response.getTopChartsByCountry?.podcastSeries?.filter(nonNullable) ?? []
-	);
+	if (response) {
+		return JSON.parse(response);
+	}
+
+	return [];
+}
+
+export async function getPodcastsByGenre(
+	genre: Genre,
+	limit?: number,
+): Promise<PodcastSeries[]> {
+	"use cache";
+
+	const response = await redisClient.get(`genre_podcasts_${genre}`);
+
+	if (response) {
+		const results = JSON.parse(response);
+
+		if (limit && limit > 0) {
+			return results.slice(0, limit);
+		}
+
+		return results;
+	}
+
+	return [];
 }
 
 export async function getPodcastById(uuid: string) {
@@ -32,15 +55,27 @@ export async function getEpisodeById(uuid: string) {
 	return response.getPodcastEpisode;
 }
 
-export async function getPodcastsByGenre(genres: Genre[]) {
+export async function searchPodcast(term: string, limit = 5) {
 	"use cache";
 
-	const response = await podcastClient.GetPodcastsByGenre({
-		taddyType: TaddyType.Podcastseries,
-		genres,
+	const response = await podcastClient.SearchPodcast({
+		term,
+		limitPerPage: limit,
 	});
 
-	return (
-		response.getTopChartsByGenres?.podcastSeries?.filter(nonNullable) ?? []
-	);
+	return response.search?.podcastSeries?.filter(nonNullable) ?? [];
+}
+
+export async function refreshPodcast(podcastId: string, rssUrl: string) {
+	const rss = await parseXMLFromURL(rssUrl);
+
+	if (rss) {
+		await saveEpisodes(rss.items, podcastId, rss.podcastPeople);
+	}
+}
+
+export async function getColors(url: string) {
+	const vibrant = new Vibrant(url);
+
+	return vibrant.getPalette();
 }

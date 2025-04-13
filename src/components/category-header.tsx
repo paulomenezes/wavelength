@@ -1,6 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import { genreConfig } from "~/utils/categories";
+import { HOMEPAGE_GENRES } from "~/utils/consts";
 
 export function CategoryHeader() {
 	const [activeSection, setActiveSection] = useState("trending");
@@ -16,18 +19,10 @@ export function CategoryHeader() {
 
 	// Update active section based on scroll position
 	useEffect(() => {
-		const handleScroll = () => {
-			const sections = [
-				"trending",
-				"news",
-				"comedy",
-				"true-crime",
-				"society-culture",
-				"sports",
-			];
-
-			for (const sectionId of sections) {
+		function handleScroll() {
+			for (const sectionId of ["trending", ...HOMEPAGE_GENRES]) {
 				const section = document.getElementById(sectionId);
+
 				if (section) {
 					const rect = section.getBoundingClientRect();
 					// If the section is in view (with some buffer for the sticky header)
@@ -37,10 +32,13 @@ export function CategoryHeader() {
 					}
 				}
 			}
-		};
+		}
 
 		window.addEventListener("scroll", handleScroll);
-		return () => window.removeEventListener("scroll", handleScroll);
+
+		return () => {
+			window.removeEventListener("scroll", handleScroll);
+		};
 	}, []);
 
 	return (
@@ -54,47 +52,22 @@ export function CategoryHeader() {
 					>
 						Trending
 					</button>
-					<button
-						type="button"
-						onClick={() => scrollToSection("news")}
-						className={`whitespace-nowrap ${activeSection === "news" ? "border-gray-900 text-gray-900" : "text-gray-500 hover:text-gray-900"}`}
-					>
-						News
-					</button>
-					<button
-						type="button"
-						onClick={() => scrollToSection("comedy")}
-						className={`whitespace-nowrap ${activeSection === "comedy" ? "border-gray-900 text-gray-900" : "text-gray-500 hover:text-gray-900"}`}
-					>
-						Comedy
-					</button>
-					<button
-						type="button"
-						onClick={() => scrollToSection("true-crime")}
-						className={`whitespace-nowrap ${activeSection === "true-crime" ? "border-gray-900 text-gray-900" : "text-gray-500 hover:text-gray-900"}`}
-					>
-						True Crime
-					</button>
-					<button
-						type="button"
-						onClick={() => scrollToSection("society-culture")}
-						className={`whitespace-nowrap ${activeSection === "society-culture" ? "border-gray-900 text-gray-900" : "text-gray-500 hover:text-gray-900"}`}
-					>
-						Society & Culture
-					</button>
-					<button
-						type="button"
-						onClick={() => scrollToSection("sports")}
-						className={`whitespace-nowrap ${activeSection === "sports" ? "border-gray-900 text-gray-900" : "text-gray-500 hover:text-gray-900"}`}
-					>
-						Sports
-					</button>
-					<button
-						type="button"
+					{HOMEPAGE_GENRES.map((genre) => (
+						<button
+							key={genre}
+							type="button"
+							onClick={() => scrollToSection(genre)}
+							className={`whitespace-nowrap ${activeSection === genre ? "border-gray-900 text-gray-900" : "text-gray-500 hover:text-gray-900"}`}
+						>
+							{genreConfig[genre]?.label}
+						</button>
+					))}
+					<Link
+						href="/categories"
 						className="whitespace-nowrap text-gray-500 hover:text-gray-900"
 					>
 						More
-					</button>
+					</Link>
 				</div>
 			</div>
 		</div>

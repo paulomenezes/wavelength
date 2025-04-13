@@ -1,16 +1,21 @@
 import { z } from "zod";
 import { Genre } from "~/graphql/generated";
+import { parseXMLFromURL } from "~/lib/parse-rss-xml";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import {
+	getColors,
 	getEpisodeById,
 	getPodcastById,
 	getPodcastsByGenre,
 	getTrendingPodcasts,
+	refreshPodcast,
 } from "~/services/podcast";
 
 export const podcastRouter = createTRPCRouter({
 	getTrending: publicProcedure.query(async () => {
-		return getTrendingPodcasts();
+		const podcasts = await getTrendingPodcasts();
+
+		return podcasts;
 	}),
 	getPodcastById: publicProcedure
 		.input(z.object({ uuid: z.string() }))
@@ -25,6 +30,21 @@ export const podcastRouter = createTRPCRouter({
 	getPodcastsByGenre: publicProcedure
 		.input(z.object({ genre: z.nativeEnum(Genre) }))
 		.query(async ({ input }) => {
-			return getPodcastsByGenre([input.genre]);
+			return getPodcastsByGenre(input.genre);
+		}),
+	parseRSSFeed: publicProcedure
+		.input(z.object({ url: z.string() }))
+		.query(async ({ input }) => {
+			return parseXMLFromURL(input.url);
+		}),
+	refreshPodcast: publicProcedure
+		.input(z.object({ uuid: z.string(), rssUrl: z.string() }))
+		.mutation(async ({ input }) => {
+			return refreshPodcast(input.uuid, input.rssUrl);
+		}),
+	getColors: publicProcedure
+		.input(z.object({ url: z.string() }))
+		.query(async ({ input }) => {
+			return getColors(input.url);
 		}),
 });

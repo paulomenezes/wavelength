@@ -6,6 +6,11 @@ import { Geist } from "next/font/google";
 import { Suspense } from "react";
 import { NavBar } from "~/components/nav-bar";
 import { TRPCReactProvider } from "~/trpc/react";
+import { AudioPlayerProvider } from "~/contexts/audio-player-context";
+import { Toaster } from "~/components/ui/sonner";
+import { AudioPlayer } from "~/components/audio-player";
+import { PodcastChat } from "~/components/chat";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 export const metadata: Metadata = {
 	title: "Create T3 App",
@@ -29,11 +34,21 @@ export default function RootLayout({
 				<html lang="en">
 					<body className={`${geist.variable} antialiased`}>
 						<TRPCReactProvider>
-							<div className="min-h-screen">
-								<NavBar />
+							<NuqsAdapter>
+								<AudioPlayerProvider>
+									<div className="min-h-screen pb-36">
+										<NavBar />
 
-								{children}
-							</div>
+										{children}
+									</div>
+
+									<Toaster position="top-center" />
+
+									<PodcastChat />
+
+									<AudioPlayer />
+								</AudioPlayerProvider>
+							</NuqsAdapter>
 						</TRPCReactProvider>
 					</body>
 				</html>

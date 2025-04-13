@@ -1,4 +1,7 @@
 {
 	"editor.defaultFormatter": "biomejs.biome",
-	"editor.formatOnSave": true
+	"editor.formatOnSave": true,
+	"deno.enablePaths": ["./supabase/functions"],
+	"deno.importMap": "./supabase/functions/import_map.json",
+	"deno.enable": true
 }

@@ -2,6 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { PodcastSeries } from "~/graphql/generated";
+import { Skeleton } from "./ui/skeleton";
 
 interface PodcastCardProps {
 	podcast: PodcastSeries;
@@ -50,7 +51,9 @@ export async function PodcastCard({ podcast }: PodcastCardProps) {
 							{podcast.totalEpisodesCount} episodes
 						</p>
 						{podcast.authorName && (
-							<p className="mt-1 text-white text-xs">{podcast.authorName}</p>
+							<p className="mt-1 truncate text-white text-xs">
+								{podcast.authorName}
+							</p>
 						)}
 					</div>
 					<div className="overflow-hidden rounded-sm">
@@ -65,5 +68,26 @@ export async function PodcastCard({ podcast }: PodcastCardProps) {
 				</div>
 			</div>
 		</Link>
+	);
+}
+
+export async function PodcastCardLoading() {
+	return (
+		<div className="relative overflow-hidden rounded-lg bg-gradient-to-b from-gray-100 to-gray-200 p-3">
+			<div className="absolute inset-0 h-full w-full">
+				<div className="absolute inset-0 bg-gray-200 backdrop-blur-lg" />
+			</div>
+
+			<div className="relative space-y-3">
+				<div className="space-y-1 text-sm">
+					<Skeleton className="h-5 w-40" />
+					<Skeleton className="h-3 w-24" />
+					<Skeleton className="h-4 w-32" />
+				</div>
+				<div className="overflow-hidden rounded-sm">
+					<Skeleton className="aspect-square w-full" />
+				</div>
+			</div>
+		</div>
 	);
 }
