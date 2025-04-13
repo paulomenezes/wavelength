@@ -13,6 +13,8 @@ import Link from "next/link";
 import type { PodcastSeries } from "~/graphql/generated";
 import type { RSSBasicEpisode } from "~/types/rss-episode";
 import { getDateDistance } from "~/utils/functions";
+import { AddToQueueButton } from "./add-to-queue-button";
+import { MarkAsListenedButton } from "./mark-as-listened-button";
 import { PlayButton } from "./play-button";
 import { Button, buttonVariants } from "./ui/button";
 import {
@@ -104,15 +106,19 @@ export function EpisodeCard({
 						Show more
 					</Link>
 
-					<Button type="button" title="Mark as played" variant="link">
-						<CheckCheckIcon className="h-5 w-5" />
-						Mark as completed
-					</Button>
+					<MarkAsListenedButton
+						episode={episode}
+						podcast={podcast}
+						variant="link"
+						size="default"
+					/>
 
-					<Button type="button" title="Add to queue" variant="link">
-						<ListMusic className="h-5 w-5" />
-						Add to queue
-					</Button>
+					<AddToQueueButton
+						episode={episode}
+						podcast={podcast}
+						variant="link"
+						size="default"
+					/>
 				</div>
 			</DisplayCardFooter>
 		</DisplayCard>

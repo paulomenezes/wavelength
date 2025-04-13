@@ -1,10 +1,12 @@
 import { format, parse, subYears } from "date-fns";
+import type { podcast_episodes } from "generated/prisma";
 import { Vibrant } from "node-vibrant/node";
-import type { Genre, PodcastSeries } from "~/graphql/generated";
+import type { Genre, PodcastEpisode, PodcastSeries } from "~/graphql/generated";
 import { databaseClient } from "~/lib/client-database";
 import { podcastClient } from "~/lib/client-podcast";
 import { redisClient } from "~/lib/client-redis";
 import { parseXMLFromURL } from "~/lib/parse-rss-xml";
+import type { RSSBasicEpisode } from "~/types/rss-episode";
 import { nonNullable } from "~/utils/functions";
 import { saveEpisodes } from "./episodes";
 
@@ -49,12 +51,81 @@ export async function getPodcastById(uuid: string) {
 	return response.getPodcastSeries;
 }
 
-export async function getEpisodeById(uuid: string) {
+export async function getMultiplePodcastById(uuids: string[]) {
 	"use cache";
 
-	const response = await podcastClient.GetPodcastEpisode({ uuid });
+	const response = await podcastClient.GetMultiplePodcastSeries({ uuids });
 
-	return response.getPodcastEpisode;
+	return response.getMultiplePodcastSeries?.filter(nonNullable) ?? [];
+}
+
+export async function getEpisodeById(
+	uuid: string,
+): Promise<RSSBasicEpisode | null | undefined> {
+	// "use cache";
+
+	try {
+		const episode = await databaseClient.podcast_episodes.findFirst({
+			where: {
+				OR: [
+					{ id: Number.isNaN(Number(uuid)) ? undefined : Number(uuid) },
+					{ uuid: uuid },
+				],
+			},
+			include: {
+				podcast_episode_enclosures: true,
+			},
+		});
+
+		if (!episode) {
+			return null;
+		}
+
+		return {
+			...episode,
+			enclosures: episode?.podcast_episode_enclosures ?? [],
+		};
+	} catch (error) {
+		console.error(error);
+
+		return null;
+	}
+
+	// const response = await podcastClient.GetPodcastEpisode({ uuid });
+
+	// return response.getPodcastEpisode
+	// 	? {
+	// 			// id: response.getPodcastEpisode.id,
+	// 			uuid: response.getPodcastEpisode.uuid ?? "",
+	// 			title: response.getPodcastEpisode.name ?? "",
+	// 			description: response.getPodcastEpisode.description ?? "",
+	// 			link: response.getPodcastEpisode.websiteUrl ?? "",
+	// 			// author: response.getPodcastEpisode.author ?? "",
+	// 			published: response.getPodcastEpisode.datePublished
+	// 				? new Date(response.getPodcastEpisode.datePublished * 1000)
+	// 				: null,
+	// 			created: response.getPodcastEpisode.datePublished
+	// 				? new Date(response.getPodcastEpisode.datePublished * 1000)
+	// 				: null,
+	// 			// category: response.getPodcastEpisode.category,
+	// 			// content: response.getPodcastEpisode.content,
+	// 			// content_encoded: response.getPodcastEpisode.content_encoded,
+	// 			// podcast_transcript: response.getPodcastEpisode.podcast_transcript,
+	// 			// itunes_summary: response.getPodcastEpisode.itunes_summary,
+	// 			// itunes_author: response.getPodcastEpisode.itunes_author,
+	// 			// itunes_explicit: response.getPodcastEpisode.itunes_explicit,
+	// 			itunes_duration: response.getPodcastEpisode.duration
+	// 				? String(response.getPodcastEpisode.duration)
+	// 				: null,
+	// 			// itunes_season: response.getPodcastEpisode.itunes_season,
+	// 			// itunes_episode: response.getPodcastEpisode.itunes_episode,
+	// 			// itunes_episode_type: response.getPodcastEpisode.itunes_episode_type,
+	// 			itunes_image: response.getPodcastEpisode.imageUrl,
+	// 			// created_at: response.getPodcastEpisode.created_at,
+	// 			// updated_at: response.getPodcastEpisode.updated_at,
+	// 			// podcast_uuid: response.getPodcastEpisode.podcast_uuid,
+	// 		}
+	// 	: null;
 }
 
 export async function searchPodcast(term: string, limit = 5) {

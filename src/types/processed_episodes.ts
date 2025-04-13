@@ -4,4 +4,9 @@ export type ProcessedEpisode = podcast_episodes & {
 	day_of_week: number;
 	processed_title_colon: string;
 	processed_title_dash: string;
+	enclosures: Array<{
+		url: string;
+		type: string | null;
+		length: number | null;
+	}> | null;
 };

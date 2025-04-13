@@ -47,12 +47,21 @@ export async function getEpisodesByPodcastId(
 
 	const whereClause = Prisma.sql`WHERE ${Prisma.join(conditions, " AND ")}`;
 
-	console.log("##", whereClause.sql);
-
 	const [data, count] = await Promise.all([
 		databaseClient.$queryRaw<ProcessedEpisode[]>(
 			Prisma.sql`
-			SELECT * FROM processed_episodes
+			SELECT 
+				pe.*,
+				(
+					SELECT json_agg(json_build_object(
+						'url', pee.url,
+						'type', pee.type,
+						'length', pee.length
+					))
+					FROM podcast_episode_enclosures pee
+					WHERE pee.episode_uuid = pe.uuid AND pee.type like 'audio%'
+				) as enclosures
+			FROM processed_episodes pe
 			${whereClause}
 			ORDER BY published DESC LIMIT ${limit ?? 25} OFFSET ${offset ?? 0}
 			`,
@@ -68,7 +77,7 @@ export async function getEpisodesByPodcastId(
 		items: data.map((episode) => ({
 			...episode,
 			day_of_week: Number(episode.day_of_week),
-			enclosures: [],
+			enclosures: episode.enclosures ?? [],
 		})),
 		count: Number(count.at(0)?.count ?? 0),
 	};

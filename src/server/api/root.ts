@@ -3,6 +3,7 @@ import { podcastRouter } from "~/server/api/routers/podcast";
 import { subscriptionRouter } from "~/server/api/routers/subscription";
 import { transcriptionRouter } from "~/server/api/routers/transcription";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
+import { queueRouter } from "./routers/queue";
 
 /**
  * This is the primary router for your server.
@@ -14,6 +15,7 @@ export const appRouter = createTRPCRouter({
 	episodes: episodesRouter,
 	transcription: transcriptionRouter,
 	subscription: subscriptionRouter,
+	queue: queueRouter,
 });
 
 // export type definition of API

@@ -7,6 +7,7 @@ import {
 	ChevronUpIcon,
 	HeadphonesIcon,
 	Loader2Icon,
+	MessageSquareTextIcon,
 	PauseIcon,
 	PlayIcon,
 	RotateCcwIcon,
@@ -143,7 +144,7 @@ export function AudioPlayer() {
 			<div className="w-full p-2 md:p-4">
 				<div className="flex flex-col items-center gap-4 md:flex-row">
 					{/* Podcast/Summary image and info - hidden on mobile */}
-					<div className="hidden w-1/4 items-center gap-3 md:flex">
+					<div className="mr-auto hidden w-1/5 items-center gap-3 border md:flex">
 						{!imageError && podcastImage ? (
 							<img
 								src={podcastImage}
@@ -170,7 +171,7 @@ export function AudioPlayer() {
 					</div>
 
 					{/* Player controls and progress */}
-					<div className="flex w-full flex-col gap-2 md:w-2/4">
+					<div className="flex w-full flex-col gap-2 md:w-2/5">
 						{/* Mobile episode title */}
 						<div className="mb-1 text-center md:hidden">
 							<p className="truncate font-medium text-sm">
@@ -238,45 +239,46 @@ export function AudioPlayer() {
 						</div>
 					</div>
 
-					<button
-						type="button"
-						onClick={() => setIsExpanded((prev) => !prev)}
-						className="ml-2 flex h-8 w-8 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-						title={isExpanded ? "Hide transcript" : "Show transcript"}
-						disabled={currentTranscriptIsLoading}
-					>
-						{currentTranscriptIsLoading ? (
-							<Loader2Icon className="h-5 w-5 animate-spin" />
-						) : isExpanded ? (
-							<ChevronDownIcon className="h-5 w-5" />
-						) : (
-							<ChevronUpIcon className="h-5 w-5" />
-						)}
-					</button>
-
-					{/* Volume control - hidden on mobile */}
-					<div className="hidden w-1/4 items-center justify-end gap-2 md:flex">
+					<div className="ml-auto flex w-full items-center justify-center gap-2 md:w-1/5 md:justify-end">
 						<Button
-							variant="ghost"
+							type="button"
+							onClick={() => setIsExpanded((prev) => !prev)}
+							title={isExpanded ? "Hide transcript" : "Show transcript"}
+							disabled={currentTranscriptIsLoading}
+							variant={isExpanded ? "default" : "outline"}
 							size="icon"
-							onClick={toggleMute}
-							className="h-8 w-8"
 						>
-							{isMuted || volume === 0 ? (
-								<VolumeXIcon className="h-4 w-4" />
+							{currentTranscriptIsLoading ? (
+								<Loader2Icon className="h-5 w-5 animate-spin" />
 							) : (
-								<Volume2Icon className="h-4 w-4" />
+								<MessageSquareTextIcon className="h-5 w-5" />
 							)}
 						</Button>
 
-						<Slider
-							value={[volume]}
-							min={0}
-							max={100}
-							step={1}
-							onValueChange={handleVolumeChange}
-							className="w-24"
-						/>
+						{/* Volume control - hidden on mobile */}
+						<div className="hidden flex-1 items-center justify-end gap-2 md:flex">
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={toggleMute}
+								className="h-8 w-8"
+							>
+								{isMuted || volume === 0 ? (
+									<VolumeXIcon className="h-4 w-4" />
+								) : (
+									<Volume2Icon className="h-4 w-4" />
+								)}
+							</Button>
+
+							<Slider
+								value={[volume]}
+								min={0}
+								max={100}
+								step={1}
+								onValueChange={handleVolumeChange}
+								className="w-44"
+							/>
+						</div>
 					</div>
 				</div>
 			</div>

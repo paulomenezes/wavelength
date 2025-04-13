@@ -47,6 +47,8 @@ export function EpisodesList({
 			},
 		);
 
+	console.log(data);
+
 	const episodes = data?.items ?? [];
 	const count = data?.count ?? 0;
 

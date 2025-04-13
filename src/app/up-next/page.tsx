@@ -3,44 +3,61 @@
 import type React from "react";
 
 import {
+	CalendarIcon,
 	Clock,
 	GripVertical,
 	ListMusic,
-	Pause,
 	Play,
 	Plus,
 	X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { PlayButton } from "~/components/play-button";
+import { Button } from "~/components/ui/button";
 import {
-	getQueueWithDetails,
-	removeFromQueue,
-	reorderQueue,
-} from "~/lib/queue-data";
+	DisplayCard,
+	DisplayCardContent,
+	DisplayCardFooter,
+} from "~/components/ui/display-card";
+import { cn } from "~/lib/utils";
+import { api } from "~/trpc/react";
+import { getDateDistance } from "~/utils/functions";
 
 export default function UpNextPage() {
-	const [queue, setQueue] = useState(getQueueWithDetails());
-	const [isPlaying, setIsPlaying] = useState<string | null>(null);
-	const [draggedItem, setDraggedItem] = useState<string | null>(null);
+	const { data, refetch, isLoading } = api.queue.getQueue.useQuery();
+	const { mutateAsync: removeFromQueue } =
+		api.queue.removeFromQueue.useMutation({
+			onSuccess: () => {
+				refetch();
+			},
+		});
+	const { mutateAsync: reorderQueue, isPending } =
+		api.queue.reorderQueue.useMutation({
+			onSuccess: () => {
+				refetch();
+			},
+		});
 
-	// Toggle play state for an item
-	const togglePlay = (queueId: string) => {
-		if (isPlaying === queueId) {
-			setIsPlaying(null);
-		} else {
-			setIsPlaying(queueId);
-		}
-	};
+	const [queue, setQueue] = useState(data ?? []);
+
+	useEffect(() => {
+		setQueue(data ?? []);
+	}, [data]);
+
+	console.log(queue);
+
+	const [draggedItem, setDraggedItem] = useState<string | null>(null);
 
 	// Remove an item from the queue
 	const handleRemove = (queueId: string) => {
-		removeFromQueue(queueId);
-		setQueue(getQueueWithDetails());
-		if (isPlaying === queueId) {
-			setIsPlaying(null);
-		}
+		toast.promise(removeFromQueue({ episodeUuid: queueId }), {
+			loading: "Removing from queue...",
+			success: "Removed from queue",
+			error: "Failed to remove from queue",
+		});
 	};
 
 	// Handle drag start
@@ -53,8 +70,12 @@ export default function UpNextPage() {
 		e.preventDefault();
 		if (!draggedItem || draggedItem === queueId) return;
 
-		const draggedIndex = queue.findIndex((item) => item.id === draggedItem);
-		const targetIndex = queue.findIndex((item) => item.id === queueId);
+		const draggedIndex = queue.findIndex(
+			(item) => item.episode_uuid === draggedItem,
+		);
+		const targetIndex = queue.findIndex(
+			(item) => item.episode_uuid === queueId,
+		);
 
 		if (draggedIndex !== -1 && targetIndex !== -1) {
 			// Reorder in the UI
@@ -77,10 +98,16 @@ export default function UpNextPage() {
 	const handleDrop = (e: React.DragEvent) => {
 		e.preventDefault();
 
-		// Update the backend data
-		for (const item of queue) {
-			reorderQueue(item.id, item.position);
-		}
+		toast.promise(
+			reorderQueue({
+				items: queue.map((item) => ({ id: item.id, position: item.position })),
+			}),
+			{
+				loading: "Reordering queue...",
+				success: "Queue reordered",
+				error: "Failed to reorder queue",
+			},
+		);
 
 		setDraggedItem(null);
 	};
@@ -95,14 +122,15 @@ export default function UpNextPage() {
 			<div className="container mx-auto px-4 py-8">
 				<div className="mb-8 flex items-center justify-between">
 					<h1 className="font-bold text-3xl">Up Next</h1>
-					<div className="flex items-center gap-4">
-						<button
-							type="button"
-							className="inline-flex items-center gap-2 rounded-md bg-gray-900 px-4 py-2 font-medium text-sm text-white hover:bg-gray-800"
-						>
-							<Play className="h-4 w-4" />
-							Play All
-						</button>
+					{/* <div className="flex items-center gap-4">
+						{queue[0]?.episode && queue[0]?.podcast && (
+							<PlayButton
+								episode={queue[0]?.episode}
+								podcast={queue[0]?.podcast}
+								variant="default"
+								size="sm"
+							/>
+						)}
 						<button
 							type="button"
 							className="inline-flex items-center gap-2 rounded-md border border-gray-300 px-4 py-2 font-medium text-gray-700 text-sm hover:bg-gray-50"
@@ -110,10 +138,10 @@ export default function UpNextPage() {
 							<Plus className="h-4 w-4" />
 							Add Episodes
 						</button>
-					</div>
+					</div> */}
 				</div>
 
-				{queue.length === 0 ? (
+				{queue?.length === 0 ? (
 					<div className="flex flex-col items-center justify-center py-16 text-center">
 						<div className="mb-4 rounded-full bg-gray-100 p-4">
 							<ListMusic className="h-8 w-8 text-gray-400" />
@@ -133,90 +161,94 @@ export default function UpNextPage() {
 						</Link>
 					</div>
 				) : (
-					<div className="space-y-4">
-						{queue.map((item) => (
-							<div
+					<div className="flex flex-col gap-4">
+						{queue?.map((item) => (
+							<DisplayCard
 								key={item.id}
-								draggable
-								onDragStart={() => handleDragStart(item.id)}
-								onDragOver={(e) => handleDragOver(e, item.id)}
+								draggable={!isPending && !isLoading}
+								onDragStart={() => handleDragStart(item.episode_uuid)}
+								onDragOver={(e) => handleDragOver(e, item.episode_uuid)}
 								onDrop={handleDrop}
 								onDragEnd={handleDragEnd}
-								className={`flex items-center gap-4 rounded-lg border border-gray-200 bg-white p-4 hover:shadow-md ${
-									draggedItem === item.id ? "opacity-50" : ""
+								className={` ${
+									draggedItem === item.episode_uuid ? "opacity-50" : ""
 								}`}
 							>
-								<div className="cursor-move text-gray-400">
-									<GripVertical className="h-5 w-5" />
-								</div>
-
-								<div className="relative shrink-0">
-									<Image
-										src={
-											item.episode?.image ||
-											item.podcast?.coverImage ||
-											"/placeholder.svg"
-										}
-										alt={item.episode?.title || ""}
-										width={80}
-										height={80}
-										className="rounded-md object-cover"
-									/>
-									<button
-										type="button"
-										onClick={() => togglePlay(item.id)}
-										className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity hover:opacity-100"
-									>
-										{isPlaying === item.id ? (
-											<Pause className="h-8 w-8 text-white" />
-										) : (
-											<Play className="h-8 w-8 text-white" />
+								<DisplayCardContent className="flex items-center gap-4">
+									<div
+										className={cn(
+											"text-gray-400",
+											!isPending && !isLoading && "cursor-move",
 										)}
-									</button>
-								</div>
-
-								<div className="min-w-0 flex-1">
-									<Link
-										href={`/podcast/${item.podcastId}/episode/${item.episodeId}`}
-										className="block hover:underline"
 									>
-										<h3 className="truncate font-medium">
-											{item.episode?.title}
-										</h3>
-									</Link>
-									<Link
-										href={`/podcast/${item.podcastId}`}
-										className="text-gray-500 text-sm hover:underline"
-									>
-										{item.podcast?.title}
-									</Link>
-									<div className="mt-1 flex items-center gap-4 text-gray-500 text-xs">
-										<span className="flex items-center gap-1">
-											<Clock className="h-3 w-3" />
-											{item.episode?.duration}
-										</span>
-										<span>
-											Added {new Date(item.addedAt).toLocaleDateString()}
-										</span>
+										<GripVertical className="h-5 w-5" />
 									</div>
-								</div>
 
-								<div className="flex items-center gap-2">
-									{isPlaying === item.id && (
-										<div className="font-medium text-gray-900 text-sm">
-											Now Playing
+									<div className="relative shrink-0">
+										<Image
+											src={
+												item.episode?.itunes_image ||
+												item.podcast?.imageUrl ||
+												"/placeholder.svg"
+											}
+											alt={item.episode?.title || ""}
+											width={80}
+											height={80}
+											className="rounded-md object-cover"
+										/>
+									</div>
+
+									<div className="min-w-0 flex-1">
+										<Link
+											href={`/podcast/${item.podcast.uuid}/episode/${item.episode.uuid}`}
+											className="block hover:underline"
+										>
+											<h3 className="truncate font-medium">
+												{item.episode?.title}
+											</h3>
+										</Link>
+										<Link
+											href={`/podcast/${item.podcast.uuid}`}
+											className="text-gray-500 text-sm hover:underline"
+										>
+											{item.podcast?.name}
+										</Link>
+										<div className="mt-1 flex items-center gap-4 text-gray-500 text-xs">
+											<span className="flex items-center gap-1">
+												<Clock className="h-3 w-3" />
+												{item.episode?.itunes_duration}
+											</span>
+
+											<span className="flex items-center gap-1">
+												<CalendarIcon className="h-3 w-3" />
+												<span>Added {getDateDistance(item.added_at)}</span>
+											</span>
 										</div>
-									)}
-									<button
-										type="button"
-										onClick={() => handleRemove(item.id)}
-										className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-										aria-label="Remove from queue"
-									>
-										<X className="h-5 w-5" />
-									</button>
-								</div>
-							</div>
+									</div>
+
+									<div className="flex items-center gap-2">
+										<PlayButton
+											episode={item.episode}
+											podcast={item.podcast}
+											variant="default"
+										/>
+									</div>
+								</DisplayCardContent>
+
+								<DisplayCardFooter className="justify-end">
+									<div className="flex items-center justify-end gap-2">
+										<Button
+											type="button"
+											onClick={() => handleRemove(item.episode_uuid)}
+											variant="link"
+											aria-label="Remove from queue"
+										>
+											<X className="h-5 w-5" />
+											Remove from queue
+										</Button>
+									</div>
+								</DisplayCardFooter>
+							</DisplayCard>
 						))}
 					</div>
 				)}

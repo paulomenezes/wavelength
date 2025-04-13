@@ -6,7 +6,7 @@ export type RSSEpisode = {
 	uuid: string;
 	title: string | null;
 	description: string | null;
-	link: string | null;
+	link?: string | null;
 	author?: string | null;
 	published: Date | string | number | null;
 	created: Date | string | number | null;

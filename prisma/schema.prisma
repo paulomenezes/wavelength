@@ -11,11 +11,11 @@ datasource db {
 
 model chapters {
   id           BigInt    @id @default(autoincrement())
-  episode_uuid String    @db.Uuid
+  episode_uuid String    @db.Text
   title        String
   start_time   Int
   end_time     Int
-  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+  created_at   DateTime? @default(now())
 
   @@index([episode_uuid], map: "idx_chapters_episode_uuid")
 }
@@ -23,8 +23,8 @@ model chapters {
 model favorites {
   id           BigInt    @id @default(autoincrement())
   user_id      String    @db.VarChar(255)
-  episode_uuid String    @db.Uuid
-  favorited_at DateTime? @default(now()) @db.Timestamptz(6)
+  episode_uuid String    @db.Text
+  favorited_at DateTime? @default(now())
 
   @@index([episode_uuid], map: "idx_favorites_episode_uuid")
   @@index([user_id], map: "idx_favorites_user_id")
@@ -34,17 +34,16 @@ model favorites {
 model listening_history {
   id           BigInt    @id @default(autoincrement())
   user_id      String    @db.VarChar(255)
-  podcast_uuid String    @db.Uuid
-  episode_uuid String    @db.Uuid
-  listened_at  DateTime? @default(now()) @db.Timestamptz(6)
+  episode_uuid String    @db.Text
+  started_at   DateTime  @default(now())
+  completed_at DateTime? @default(now())
   progress     Float
   duration     Float
+  created_at   DateTime? @default(now())
+  updated_at   DateTime? @updatedAt
 
   @@index([episode_uuid], map: "idx_listening_history_episode_uuid")
-  @@index([podcast_uuid], map: "idx_listening_history_podcast_uuid")
   @@index([user_id], map: "idx_listening_history_user_id")
-  @@index([user_id, podcast_uuid], map: "idx_listening_history_user_id_podcast_uuid")
-  @@index([user_id, podcast_uuid, episode_uuid], map: "idx_listening_history_user_id_podcast_uuid_episode_uuid")
 }
 
 model people {
@@ -61,7 +60,7 @@ model people {
 
 model podcast_episode_enclosures {
   id               BigInt            @id @default(autoincrement())
-  episode_uuid     String?
+  episode_uuid     String?           @db.Text
   url              String
   type             String?
   length           Int?
@@ -73,7 +72,7 @@ model podcast_episode_enclosures {
 
 model podcast_episode_people {
   id               BigInt            @id @default(autoincrement())
-  episode_uuid     String?
+  episode_uuid     String?           @db.Text
   person_uuid      String
   created_at       DateTime?         @default(now()) @db.Timestamp(6)
   podcast_episodes podcast_episodes? @relation(fields: [episode_uuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
@@ -85,7 +84,7 @@ model podcast_episode_people {
 
 model podcast_episode_transcripts {
   id               BigInt            @id @default(autoincrement())
-  episode_uuid     String?
+  episode_uuid     String?           @db.Text
   url              String?
   rel              String?
   type             String?
@@ -143,14 +142,14 @@ model podcast_people {
 model podcast_series {
   id                     BigInt           @default(autoincrement())
   uuid                   String           @id(map: "podcastseries_pkey") @db.Uuid
-  created_at             DateTime         @default(now()) @db.Timestamptz(6)
-  updated_at             DateTime?        @db.Timestamptz(6)
+  created_at             DateTime         @default(now())
+  updated_at             DateTime?
   source                 String?          @db.VarChar(255)
   hash                   String?          @unique(map: "podcastseries_hash_key") @db.VarChar(255)
   hash_timestamp         BigInt?
   genres_hash            String?          @db.VarChar(255)
   itunes_info_hash       String?          @db.VarChar(255)
-  date_published         DateTime?        @db.Timestamptz(6)
+  date_published         DateTime?
   name                   String?          @db.VarChar(255)
   description            String?
   image_url              String?
@@ -181,8 +180,8 @@ model podcast_series {
 model podcast_colors {
   id                   BigInt    @id @default(autoincrement())
   podcast_uuid         String    @db.Uuid
-  created_at           DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at           DateTime? @db.Timestamptz(6)
+  created_at           DateTime  @default(now())
+  updated_at           DateTime?
   colors_dark_muted    String?
   colors_dark_vibrant  String?
   colors_light_muted   String?
@@ -201,7 +200,7 @@ model podcast_user_settings {
   forward_skip        Int?      @default(30)
   back_skip           Int?      @default(30)
   continuous_playback Boolean?  @default(true)
-  created_at          DateTime? @default(now()) @db.Timestamptz(6)
+  created_at          DateTime? @default(now())
 
   @@index([podcast_uuid], map: "idx_podcast_user_settings_podcast_uuid")
   @@index([user_id], map: "idx_podcast_user_settings_user_id")
@@ -216,7 +215,7 @@ model subscriptions {
   id            BigInt    @id @default(autoincrement())
   user_id       String    @db.VarChar(255)
   podcast_uuid  String    @db.Uuid
-  subscribed_at DateTime? @default(now()) @db.Timestamptz(6)
+  subscribed_at DateTime? @default(now())
   group_key     String?
 
   @@index([podcast_uuid], map: "idx_subscriptions_podcast_uuid")
@@ -227,9 +226,9 @@ model subscriptions {
 model user_queue {
   id           BigInt    @id @default(autoincrement())
   user_id      String    @db.VarChar(255)
-  episode_uuid String    @db.Uuid
+  episode_uuid String    @db.Text
   position     Int
-  added_at     DateTime? @default(now()) @db.Timestamptz(6)
+  added_at     DateTime? @default(now())
 
   @@index([episode_uuid], map: "idx_user_queue_episode_uuid")
   @@index([user_id], map: "idx_user_queue_user_id")
@@ -243,7 +242,7 @@ model user_settings {
   forward_skip        Int?      @default(30)
   back_skip           Int?      @default(30)
   continuous_playback Boolean?  @default(true)
-  created_at          DateTime? @default(now()) @db.Timestamptz(6)
+  created_at          DateTime? @default(now())
 
   @@index([user_id], map: "idx_user_settings_user_id")
 }

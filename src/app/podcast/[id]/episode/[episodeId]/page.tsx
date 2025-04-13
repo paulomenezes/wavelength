@@ -12,8 +12,11 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { AddToQueueButton } from "~/components/add-to-queue-button";
+import { PlayButton } from "~/components/play-button";
+import { PodcastHeader } from "~/components/podcast-header";
+import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/server";
-import type { RSSPodcast } from "~/types/rss-podcast";
 import { getDateDistance } from "~/utils/functions";
 
 export default async function EpisodePage({
@@ -21,20 +24,15 @@ export default async function EpisodePage({
 }: { params: Promise<{ id: string; episodeId: string }> }) {
 	const { id, episodeId } = await params;
 
-	const podcast = await api.podcast.getPodcastById({ uuid: id });
+	const [podcast, episode, colors] = await Promise.all([
+		api.podcast.getPodcastById({ uuid: id }),
+		api.podcast.getEpisodeById({ uuid: episodeId }),
+		api.podcast.getColors({ podcastId: id }),
+	]);
 
 	if (!podcast) {
 		return <div>Podcast not found</div>;
 	}
-
-	let rss: RSSPodcast | null = null;
-	if (podcast.rssUrl) {
-		rss = await api.podcast.parseRSSFeed({
-			url: podcast.rssUrl,
-		});
-	}
-
-	const episode = rss?.items?.find((episode) => episode.id === episodeId);
 
 	if (!episode || !podcast) {
 		return (
@@ -56,94 +54,68 @@ export default async function EpisodePage({
 
 	return (
 		<div className="min-h-screen bg-white">
-			<div className="bg-gradient-to-b from-gray-900 to-gray-800 text-white">
-				<div className="container mx-auto px-4 py-8">
-					<Link
-						href={`/podcast/${id}`}
-						className="mb-6 inline-flex items-center gap-2 text-gray-300 hover:text-white"
-					>
-						<ArrowLeft className="h-4 w-4" />
-						Back to {podcast.name}
-					</Link>
+			<PodcastHeader imageUrl={podcast.imageUrl} podcastId={id} colors={colors}>
+				<Link
+					href={`/podcast/${id}`}
+					className="mb-6 inline-flex items-center gap-2 hover:text-white"
+				>
+					<ArrowLeft className="h-4 w-4" />
+					Back to {podcast.name}
+				</Link>
 
-					<div className="flex flex-col gap-6 md:flex-row">
-						{(episode.itunes_image ?? podcast.imageUrl) && (
-							<div className="shrink-0">
-								<Image
-									src={episode.itunes_image ?? podcast.imageUrl ?? ""}
-									alt={episode.title ?? ""}
-									width={300}
-									height={300}
-									className="aspect-square rounded-md object-cover"
-								/>
-							</div>
-						)}
+				<div className="flex flex-col gap-6 md:flex-row">
+					{(episode.itunes_image ?? podcast.imageUrl) && (
+						<div className="shrink-0">
+							<Image
+								src={episode.itunes_image ?? podcast.imageUrl ?? ""}
+								alt={episode.title ?? ""}
+								width={300}
+								height={300}
+								className="aspect-square size-40 rounded-md object-cover md:size-72"
+							/>
+						</div>
+					)}
 
-						<div>
-							<div className="mb-2 flex items-center gap-2 text-gray-300 text-sm">
-								{episode.itunes_duration && (
-									<span className="flex items-center gap-1">
-										<Clock className="h-4 w-4" />
-										{episode.itunes_duration}
-									</span>
-								)}
-								<span>•</span>
-								{episode.published && (
-									<span className="flex items-center gap-1">
-										<CalendarIcon className="h-4 w-4" />
-										{getDateDistance(episode.published)}
-									</span>
-								)}
-							</div>
+					<div>
+						<div className="mb-2 flex items-center gap-2 text-sm text-white">
+							{episode.itunes_duration && (
+								<span className="flex items-center gap-1">
+									<Clock className="h-4 w-4" />
+									{episode.itunes_duration}
+								</span>
+							)}
+							<span>•</span>
+							{episode.published && (
+								<span className="flex items-center gap-1">
+									<CalendarIcon className="h-4 w-4" />
+									{getDateDistance(episode.published)}
+								</span>
+							)}
+						</div>
 
-							<h1 className="mb-4 max-w-2xl font-bold text-3xl">
-								{episode.title}
-							</h1>
+						<h1 className="mb-4 max-w-2xl font-bold text-3xl">
+							{episode.title}
+						</h1>
 
-							{/* <p className="mb-6 max-w-2xl text-gray-300 line-clamp-3">
-								{episode.description}
-							</p> */}
+						<div className="mb-6 flex flex-wrap gap-3">
+							<PlayButton
+								episode={episode}
+								podcast={podcast}
+								variant="secondary"
+							/>
+							<Button type="button" variant="outline" size="lg">
+								<Bookmark className="h-4 w-4" />
+								Save
+							</Button>
+							<AddToQueueButton
+								episode={episode}
+								podcast={podcast}
+								variant="outline"
+							/>
+						</div>
 
-							<div className="mb-6 flex flex-wrap gap-3">
-								<button
-									type="button"
-									className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2 font-medium text-gray-900 hover:bg-gray-100"
-								>
-									<Play className="h-4 w-4" />
-									Play
-								</button>
-								<button
-									type="button"
-									className="inline-flex items-center gap-2 rounded-full bg-gray-700 px-6 py-2 font-medium text-white hover:bg-gray-600"
-								>
-									<Bookmark className="h-4 w-4" />
-									Save
-								</button>
-								<button
-									type="button"
-									className="inline-flex items-center gap-2 rounded-full bg-gray-700 px-6 py-2 font-medium text-white hover:bg-gray-600"
-								>
-									<ListMusic className="h-4 w-4" />
-									Add to Queue
-								</button>
-								<button
-									type="button"
-									className="inline-flex items-center gap-2 rounded-full bg-gray-700 px-6 py-2 font-medium text-white hover:bg-gray-600"
-								>
-									<Share2 className="h-4 w-4" />
-									Share
-								</button>
-								<button
-									type="button"
-									className="inline-flex items-center gap-2 rounded-full bg-gray-700 px-6 py-2 font-medium text-white hover:bg-gray-600"
-								>
-									<Download className="h-4 w-4" />
-									Download
-								</button>
-							</div>
-
-							{/* Hosts Section */}
-							{/* {episode.hosts && episode.hosts.length > 0 && (
+						{/* Hosts Section */}
+						{/* {episode.hosts && episode.hosts.length > 0 && (
 								<div>
 									<h2 className="text-xl font-semibold mb-3">Hosts</h2>
 									<div className="flex flex-wrap gap-4">
@@ -166,10 +138,9 @@ export default async function EpisodePage({
 									</div>
 								</div>
 							)} */}
-						</div>
 					</div>
 				</div>
-			</div>
+			</PodcastHeader>
 
 			{/* Episode Content */}
 			<div className="container mx-auto px-4 py-8">

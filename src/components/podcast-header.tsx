@@ -44,17 +44,7 @@ export function PodcastHeader({
 					colors?.darkMuted ?? data?.darkMuted ?? "var(--primary)",
 			}}
 		>
-			<div className="mx-auto max-w-[96rem] px-4 py-8">
-				<Link
-					href="/"
-					className="mb-6 inline-flex items-center gap-2 hover:text-white"
-				>
-					<ArrowLeft className="h-4 w-4" />
-					Back to podcasts
-				</Link>
-
-				{children}
-			</div>
+			<div className="mx-auto max-w-[96rem] px-4 py-8">{children}</div>
 		</div>
 	);
 }

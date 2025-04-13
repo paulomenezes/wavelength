@@ -72,6 +72,14 @@ async function PodcastPageContent({
 	return (
 		<HydrateClient>
 			<PodcastHeader imageUrl={podcast.imageUrl} podcastId={id} colors={colors}>
+				<Link
+					href="/"
+					className="mb-6 inline-flex items-center gap-2 hover:text-white"
+				>
+					<ArrowLeft className="h-4 w-4" />
+					Back to podcasts
+				</Link>
+
 				<div className="flex flex-col gap-6 md:flex-row">
 					<div className="shrink-0">
 						<Image
