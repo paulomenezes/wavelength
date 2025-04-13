@@ -49,18 +49,24 @@ async function PodcastPageContent({
 	params: Promise<{ id: string }>;
 }) {
 	const { id } = await params;
-	const podcast = await api.podcast.getPodcastById({ uuid: id });
+	const [podcast, colors] = await Promise.all([
+		api.podcast.getPodcastById({ uuid: id }),
+		api.podcast.getColors({ podcastId: id }),
+	]);
 
 	if (!podcast) {
 		return <div>Podcast not found</div>;
 	}
 
-	if (podcast.imageUrl) {
-		api.podcast.getColors.prefetch({ url: podcast.imageUrl });
+	if (podcast.imageUrl && !colors) {
+		api.podcast.saveColors.prefetch({
+			podcastId: id,
+			url: podcast.imageUrl,
+		});
 	}
 
 	return (
-		<PodcastHeader imageUrl={podcast.imageUrl}>
+		<PodcastHeader imageUrl={podcast.imageUrl} podcastId={id} colors={colors}>
 			<div className="flex flex-col gap-6 md:flex-row">
 				<div className="shrink-0">
 					<Image
@@ -101,7 +107,7 @@ async function PodcastPageContent({
 
 					<div className="flex flex-wrap gap-3">
 						<Button type="button" variant="secondary" size="lg">
-							<Play className="h-4 w-4 fill-primary" />
+							<Play className="h-4 w-4 fill-primary stroke-primary" />
 							Latest Episode
 						</Button>
 						<Button type="button" variant="outline" size="lg">

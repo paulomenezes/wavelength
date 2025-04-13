@@ -9,6 +9,7 @@ import {
 	getPodcastsByGenre,
 	getTrendingPodcasts,
 	refreshPodcast,
+	saveColors,
 } from "~/services/podcast";
 
 export const podcastRouter = createTRPCRouter({
@@ -43,8 +44,13 @@ export const podcastRouter = createTRPCRouter({
 			return refreshPodcast(input.uuid, input.rssUrl);
 		}),
 	getColors: publicProcedure
-		.input(z.object({ url: z.string() }))
+		.input(z.object({ podcastId: z.string() }))
 		.query(async ({ input }) => {
-			return getColors(input.url);
+			return getColors(input.podcastId);
+		}),
+	saveColors: publicProcedure
+		.input(z.object({ podcastId: z.string(), url: z.string() }))
+		.query(async ({ input }) => {
+			return saveColors(input.podcastId, input.url);
 		}),
 });

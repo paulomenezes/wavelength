@@ -44,6 +44,3 @@ yarn-error.log*
 
 # idea files
 .idea
-
-# generated files
-src/graphql/generated.ts

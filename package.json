@@ -4,7 +4,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"build": "pnpm run codegen && next build",
+		"build": "next build",
 		"check": "biome check .",
 		"check:unsafe": "biome check --write --unsafe .",
 		"check:write": "biome check --write .",
@@ -12,7 +12,7 @@
 		"preview": "next build && next start",
 		"start": "next start",
 		"tsc": "tsc --noEmit",
-		"codegen": "pnpm run codegen:graphql",
+		"codegen": "pnpm run codegen:graphql && pnpm run codegen:database",
 		"codegen:graphql": "graphql-codegen --config codegen.ts",
 		"codegen:database": "supabase gen types typescript --project-id xjnlpzknrprldnstlfsi > src/supabase/database.types.ts",
 		"lint": "biome lint .",
