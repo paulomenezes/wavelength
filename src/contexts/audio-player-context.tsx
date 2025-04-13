@@ -1,21 +1,21 @@
 "use client";
 
+import type { Vector } from "@upstash/vector";
 import type React from "react";
 import {
-	createContext,
-	useContext,
-	useState,
-	useEffect,
-	useCallback,
 	type ReactNode,
+	createContext,
+	useCallback,
+	useContext,
+	useEffect,
 	useRef,
+	useState,
 } from "react";
 import { toast } from "sonner";
-import type { RSSBasicEpisode, RSSEpisode } from "~/types/rss-episode";
 import type { PodcastSeries } from "~/graphql/generated";
-import type { Vector } from "@upstash/vector";
-import type { VectorDict } from "~/types/vector-dict";
 import { api } from "~/trpc/react";
+import type { RSSBasicEpisode, RSSEpisode } from "~/types/rss-episode";
+import type { VectorDict } from "~/types/vector-dict";
 
 interface AudioPlayerContextType {
 	currentEpisode: RSSBasicEpisode | null;

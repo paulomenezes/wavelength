@@ -1,7 +1,7 @@
 import { ArrowRightIcon, SearchIcon, XIcon } from "lucide-react";
 
-import { Input } from "./input";
 import { cn } from "~/lib/utils";
+import { Input } from "./input";
 
 export default function SearchInput({
 	className,

@@ -2,20 +2,20 @@
 
 import type React from "react";
 
-import { useState, useRef, useEffect, useCallback, Fragment } from "react";
 import { useChat } from "@ai-sdk/react";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
-import { X, Search, Mic } from "lucide-react";
-import { cn } from "~/lib/utils";
-import { PlaceholdersAndVanishInput } from "~/components/placeholder-input";
-import { useAudioPlayer } from "~/contexts/audio-player-context";
 import type { UIMessage } from "ai";
-import type { PodcastSeries } from "~/graphql/generated";
+import { Mic, Search, X } from "lucide-react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import {
 	ChatPodcastMessage,
 	ChatTextMessage,
 } from "~/components/chat-messages";
+import { PlaceholdersAndVanishInput } from "~/components/placeholder-input";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "~/components/ui/card";
+import { useAudioPlayer } from "~/contexts/audio-player-context";
+import type { PodcastSeries } from "~/graphql/generated";
+import { cn } from "~/lib/utils";
 
 export function PodcastChat() {
 	const { currentEpisode } = useAudioPlayer();

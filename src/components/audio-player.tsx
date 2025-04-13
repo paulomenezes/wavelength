@@ -1,5 +1,6 @@
 "use client";
 
+import * as lame from "@breezystack/lamejs";
 import {
 	AlertCircleIcon,
 	ChevronDownIcon,
@@ -13,15 +14,14 @@ import {
 	Volume2Icon,
 	VolumeXIcon,
 } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { useAudioPlayer } from "~/contexts/audio-player-context";
-import { Button } from "./ui/button";
-import { formatTime } from "~/utils/functions";
-import { Slider } from "./ui/slider";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
-import { motion, AnimatePresence } from "motion/react";
-import * as lame from "@breezystack/lamejs";
+import { formatTime } from "~/utils/functions";
+import { Button } from "./ui/button";
+import { Slider } from "./ui/slider";
 
 export function AudioPlayer() {
 	const {

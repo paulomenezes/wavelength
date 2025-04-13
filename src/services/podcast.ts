@@ -1,10 +1,10 @@
+import { Vibrant } from "node-vibrant/node";
 import type { Genre, PodcastSeries } from "~/graphql/generated";
 import { podcastClient } from "~/lib/client-podcast";
 import { redisClient } from "~/lib/client-redis";
 import { parseXMLFromURL } from "~/lib/parse-rss-xml";
 import { nonNullable } from "~/utils/functions";
 import { saveEpisodes } from "./episodes";
-import { Vibrant } from "node-vibrant/node";
 
 export async function getTrendingPodcasts(): Promise<PodcastSeries[]> {
 	"use cache";

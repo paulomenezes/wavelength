@@ -1,5 +1,6 @@
 "use client";
 
+import { X } from "lucide-react";
 import type React from "react";
 import {
 	Carousel,
@@ -8,13 +9,12 @@ import {
 	CarouselNext,
 	CarouselPrevious,
 } from "~/components/ui/carousel";
-import { X } from "lucide-react";
-import type { GroupedEpisodes } from "~/types/group-episodes";
-import { useIsMobile } from "~/hooks/use-mobile";
-import { CategoryFilterCard } from "./episode-group";
-import { usePodcastSearch } from "~/hooks/use-podcast-search";
-import { Button } from "./ui/button";
 import type { PodcastSeries } from "~/graphql/generated";
+import { useIsMobile } from "~/hooks/use-mobile";
+import { usePodcastSearch } from "~/hooks/use-podcast-search";
+import type { GroupedEpisodes } from "~/types/group-episodes";
+import { CategoryFilterCard } from "./episode-group";
+import { Button } from "./ui/button";
 
 export function EpisodesGroups({
 	groupedEpisodes,

@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { gql, GraphQLClient } from "https://deno.land/x/graphql_request/mod.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { GraphQLClient, gql } from "https://deno.land/x/graphql_request/mod.ts";
 import { Redis } from "https://deno.land/x/upstash_redis@v1.19.3/mod.ts";
 
 const supabase = createClient(

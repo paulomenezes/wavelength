@@ -3,8 +3,8 @@ import type { GroupedEpisodes } from "~/types/group-episodes";
 import type { RSSBasicEpisode } from "~/types/rss-episode";
 import { nonNullable } from "~/utils/functions";
 import {
-	removeSingleLetterWords,
 	removeNumbers,
+	removeSingleLetterWords,
 	removeSpecialCharacters,
 	removeStopWords,
 } from "~/utils/string-utils";

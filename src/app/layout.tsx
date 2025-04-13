@@ -3,14 +3,14 @@ import "~/styles/globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Suspense } from "react";
-import { NavBar } from "~/components/nav-bar";
-import { TRPCReactProvider } from "~/trpc/react";
-import { AudioPlayerProvider } from "~/contexts/audio-player-context";
-import { Toaster } from "~/components/ui/sonner";
 import { AudioPlayer } from "~/components/audio-player";
 import { PodcastChat } from "~/components/chat";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { NavBar } from "~/components/nav-bar";
+import { Toaster } from "~/components/ui/sonner";
+import { AudioPlayerProvider } from "~/contexts/audio-player-context";
+import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
 	title: "Create T3 App",

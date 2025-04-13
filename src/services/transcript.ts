@@ -1,10 +1,10 @@
 import type { Vector } from "@upstash/vector";
 import { ElevenLabsClient } from "elevenlabs";
+import { v4 as uuidv4 } from "uuid";
 import { env } from "~/env";
 import { vectorClient } from "~/lib/client-vector";
 import type { VectorDict } from "~/types/vector-dict";
 import { convertToSentences } from "~/utils/functions";
-import { v4 as uuidv4 } from "uuid";
 
 export async function generateTranscript(url: string) {
 	const client = new ElevenLabsClient({

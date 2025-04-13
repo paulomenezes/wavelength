@@ -1,6 +1,6 @@
 "use client";
 
-import { useQueryStates, parseAsString } from "nuqs";
+import { parseAsString, useQueryStates } from "nuqs";
 
 export function usePodcastSearch() {
 	return useQueryStates({

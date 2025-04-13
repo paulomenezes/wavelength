@@ -1,8 +1,8 @@
-import { getPodcastsByGenre, searchPodcast } from "~/services/podcast";
-import { z } from "zod";
-import { genreConfig } from "~/utils/categories";
 import { tool } from "ai";
+import { z } from "zod";
 import type { Genre } from "~/graphql/generated";
+import { getPodcastsByGenre, searchPodcast } from "~/services/podcast";
+import { genreConfig } from "~/utils/categories";
 
 export const searchPodcasts = tool({
 	description:

@@ -1,10 +1,10 @@
+import { openai } from "@ai-sdk/openai";
 import { generateText, tool } from "ai";
 import { z } from "zod";
 import { vectorClient } from "~/lib/client-vector";
-import type { VectorDict } from "~/types/vector-dict";
 import { getTranscript } from "~/services/transcript";
+import type { VectorDict } from "~/types/vector-dict";
 import { nonNullable } from "~/utils/functions";
-import { openai } from "@ai-sdk/openai";
 
 export const analyzePodcastQuery = tool({
 	description: `Analyze a user's question to determine if they want to know some information about some podcast that they are already listening to.

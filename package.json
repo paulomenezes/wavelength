@@ -12,7 +12,7 @@
 		"preview": "next build && next start",
 		"start": "next start",
 		"tsc": "tsc --noEmit",
-		"codegen": "pnpm run codegen:graphql && pnpm run codegen:database",
+		"codegen": "pnpm run codegen:graphql",
 		"codegen:graphql": "graphql-codegen --config codegen.ts",
 		"codegen:database": "supabase gen types typescript --project-id xjnlpzknrprldnstlfsi > src/supabase/database.types.ts",
 		"lint": "biome lint .",

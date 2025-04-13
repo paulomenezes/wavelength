@@ -1,26 +1,26 @@
 "use client";
 
-import type { RSSEpisode } from "~/types/rss-episode";
-import { EpisodeCard } from "./episode-card";
-import type { PodcastSeries } from "~/graphql/generated";
-import { useCallback, useMemo, useRef } from "react";
+import NumberFlow from "@number-flow/react";
 import {
+	type VirtualizerOptions,
 	elementScroll,
 	useWindowVirtualizer,
-	type VirtualizerOptions,
 } from "@tanstack/react-virtual";
+import { format } from "date-fns";
+import { MicVocalIcon, PodcastIcon, RssIcon, SearchIcon } from "lucide-react";
+import { useCallback, useMemo, useRef } from "react";
+import type { PodcastSeries } from "~/graphql/generated";
 import { usePodcastSearch } from "~/hooks/use-podcast-search";
+import { cn } from "~/lib/utils";
+import type { RSSEpisode } from "~/types/rss-episode";
 import { removeSingleLetterWords } from "~/utils/string-utils";
 import { removeSpecialCharacters } from "~/utils/string-utils";
 import { removeStopWords } from "~/utils/string-utils";
 import { removeNumbers } from "~/utils/string-utils";
-import { Button } from "./ui/button";
-import { format } from "date-fns";
-import SearchInput from "./ui/search-input";
 import { EmptyState } from "./empty-state";
-import { MicVocalIcon, PodcastIcon, RssIcon, SearchIcon } from "lucide-react";
-import { cn } from "~/lib/utils";
-import NumberFlow from "@number-flow/react";
+import { EpisodeCard } from "./episode-card";
+import { Button } from "./ui/button";
+import SearchInput from "./ui/search-input";
 
 function easeInOutQuint(t: number) {
 	// biome-ignore lint/style/noParameterAssign: <explanation>
