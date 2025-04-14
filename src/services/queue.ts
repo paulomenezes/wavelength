@@ -225,6 +225,14 @@ export async function reorderQueue(
 	);
 }
 
+export async function clearQueue(userId: string) {
+	await databaseClient.user_queue.deleteMany({
+		where: {
+			user_id: userId,
+		},
+	});
+}
+
 export async function markAsListened(userId: string, episodeUuid: string) {
 	const listening = await databaseClient.listening_history.findFirst({
 		where: {

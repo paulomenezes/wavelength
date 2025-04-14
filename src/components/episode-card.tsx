@@ -41,7 +41,7 @@ export function EpisodeCard({
 					{(episode.itunes_image || podcast.imageUrl) && (
 						<div className="flex flex-row gap-4">
 							<Link
-								href={`/podcast/${podcast.uuid}/episode/${episode.id}`}
+								href={`/podcast/${podcast.uuid}/episode/${episode.uuid}`}
 								className="shrink-0"
 							>
 								<Image
@@ -54,7 +54,7 @@ export function EpisodeCard({
 							</Link>
 
 							<div className="flex w-full flex-col justify-between gap-2 md:hidden md:flex-row md:items-center">
-								<Link href={`/podcast/${podcast.uuid}/episode/${episode.id}`}>
+								<Link href={`/podcast/${podcast.uuid}/episode/${episode.uuid}`}>
 									<h3 className="font-medium text-lg">{episode.title}</h3>
 								</Link>
 
@@ -66,7 +66,7 @@ export function EpisodeCard({
 					<div className="flex-1">
 						<div className="flex w-full flex-col items-start overflow-hidden">
 							<div className="hidden w-full flex-col justify-between gap-2 md:flex md:flex-row md:items-center">
-								<Link href={`/podcast/${podcast.uuid}/episode/${episode.id}`}>
+								<Link href={`/podcast/${podcast.uuid}/episode/${episode.uuid}`}>
 									<h3 className="font-medium text-lg">{episode.title}</h3>
 								</Link>
 
@@ -99,7 +99,7 @@ export function EpisodeCard({
 			<DisplayCardFooter className="justify-end">
 				<div className="flex items-center gap-2">
 					<Link
-						href={`/podcast/${podcast.uuid}/episode/${episode.id}`}
+						href={`/podcast/${podcast.uuid}/episode/${episode.uuid}`}
 						className={buttonVariants({ variant: "link" })}
 					>
 						<ChevronRightIcon className="h-5 w-5" />

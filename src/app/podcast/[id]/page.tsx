@@ -1,7 +1,6 @@
 import { ArrowLeft, Download, Play, Share2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { after } from "next/server";
 import type { SearchParams } from "nuqs";
 import { Suspense } from "react";
 import { EpisodesGroups } from "~/components/episodes-groups";
@@ -11,10 +10,8 @@ import { RefreshPodcastButton } from "~/components/refresh-podcast-button";
 import { SubscribeButton } from "~/components/subscribe-button";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
-import { groupEpisodes } from "~/lib/group-episodes";
 import { loadPodcastSearchParams } from "~/lib/podcast-search";
 import { HydrateClient, api } from "~/trpc/server";
-import type { RSSPodcast } from "~/types/rss-podcast";
 
 const colors = [
 	"#f0efed",
@@ -274,52 +271,12 @@ async function PodcastPageEpisodes({
 		return <div>Podcast not found</div>;
 	}
 
-	// console.log("## TOTAL", episodes.items.length);
-
-	// if (episodes.items.length === 0) {
-	// 	console.log(podcast.rssUrl);
-
-	// 	let rss: RSSPodcast | null = null;
-	// 	if (podcast.rssUrl) {
-	// 		rss = await api.podcast.parseRSSFeed({
-	// 			url: podcast.rssUrl,
-	// 		});
-	// 	}
-
-	// 	if (rss) {
-	// 		const groupedEpisodes = groupEpisodes(rss.items);
-
-	// 		after(async () => {
-	// 			await api.episodes.saveEpisodes({
-	// 				podcastId: id,
-	// 				episodes: rss.items,
-	// 				people: rss.podcastPeople,
-	// 			});
-	// 		});
-
-	// 		return (
-	// 			<div className="mx-auto max-w-[96rem] px-4 py-8">
-	// 				<EpisodesGroups groupedEpisodes={groupedEpisodes} podcast={podcast} />
-	// 				<EpisodesList episodes={rss?.items ?? []} podcast={podcast} />
-	// 			</div>
-	// 		);
-	// 	}
-	// } else {
-	// const groupedEpisodes = groupEpisodes(episodes.items);
-
 	return (
 		<HydrateClient>
 			<div className="mx-auto max-w-[96rem] px-4 py-8">
 				<EpisodesGroups podcast={podcast} />
-				<EpisodesList
-					// initialEpisodes={episodes.items}
-					// count={episodes.count}
-					podcast={podcast}
-				/>
+				<EpisodesList podcast={podcast} />
 			</div>
 		</HydrateClient>
 	);
-	// }
-
-	// return <div>No episodes found</div>;
 }

@@ -1,7 +1,12 @@
 import { z } from "zod";
 import type { Person } from "~/graphql/generated";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { getEpisodesByPodcastId, saveEpisodes } from "~/services/episodes";
+import {
+	getEpisodeChapters,
+	getEpisodeSummary,
+	getEpisodesByPodcastId,
+	saveEpisodes,
+} from "~/services/episodes";
 import type { RSSEpisode } from "~/types/rss-episode";
 
 export const episodesRouter = createTRPCRouter({
@@ -34,5 +39,15 @@ export const episodesRouter = createTRPCRouter({
 				input.search,
 				input.group,
 			);
+		}),
+	getEpisodeSummary: publicProcedure
+		.input(z.object({ episodeId: z.string() }))
+		.query(async ({ input }) => {
+			return getEpisodeSummary(input.episodeId);
+		}),
+	getEpisodeChapters: publicProcedure
+		.input(z.object({ episodeId: z.string() }))
+		.query(async ({ input }) => {
+			return getEpisodeChapters(input.episodeId);
 		}),
 });

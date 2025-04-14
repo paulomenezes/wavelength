@@ -24,7 +24,7 @@ export function ChatTextMessage({
 						: "bg-muted",
 				)}
 			>
-				<p>{content}</p>
+				<div dangerouslySetInnerHTML={{ __html: content }} />
 			</div>
 		</div>
 	);

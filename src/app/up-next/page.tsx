@@ -7,6 +7,8 @@ import {
 	Clock,
 	GripVertical,
 	ListMusic,
+	ListXIcon,
+	Loader2,
 	Play,
 	Plus,
 	X,
@@ -28,6 +30,12 @@ import { getDateDistance } from "~/utils/functions";
 
 export default function UpNextPage() {
 	const { data, refetch, isLoading } = api.queue.getQueue.useQuery();
+	const { mutateAsync: clearQueue, isPending: clearQueueIsPending } =
+		api.queue.clearQueue.useMutation({
+			onSuccess: () => {
+				refetch();
+			},
+		});
 	const { mutateAsync: removeFromQueue } =
 		api.queue.removeFromQueue.useMutation({
 			onSuccess: () => {
@@ -46,8 +54,6 @@ export default function UpNextPage() {
 	useEffect(() => {
 		setQueue(data ?? []);
 	}, [data]);
-
-	console.log(queue);
 
 	const [draggedItem, setDraggedItem] = useState<string | null>(null);
 
@@ -122,23 +128,37 @@ export default function UpNextPage() {
 			<div className="container mx-auto px-4 py-8">
 				<div className="mb-8 flex items-center justify-between">
 					<h1 className="font-bold text-3xl">Up Next</h1>
-					{/* <div className="flex items-center gap-4">
-						{queue[0]?.episode && queue[0]?.podcast && (
+					<div className="flex items-center gap-4">
+						{/* {queue[0]?.episode && queue[0]?.podcast && (
 							<PlayButton
 								episode={queue[0]?.episode}
 								podcast={queue[0]?.podcast}
 								variant="default"
 								size="sm"
 							/>
+						)} */}
+						{queue.length > 0 && (
+							<Button
+								type="button"
+								variant="outline"
+								disabled={clearQueueIsPending}
+								onClick={() =>
+									toast.promise(clearQueue(), {
+										loading: "Clearing queue...",
+										success: "Queue cleared",
+										error: "Failed to clear queue",
+									})
+								}
+							>
+								{clearQueueIsPending ? (
+									<Loader2 className="h-4 w-4 animate-spin" />
+								) : (
+									<ListXIcon className="h-4 w-4" />
+								)}
+								Clear Queue
+							</Button>
 						)}
-						<button
-							type="button"
-							className="inline-flex items-center gap-2 rounded-md border border-gray-300 px-4 py-2 font-medium text-gray-700 text-sm hover:bg-gray-50"
-						>
-							<Plus className="h-4 w-4" />
-							Add Episodes
-						</button>
-					</div> */}
+					</div>
 				</div>
 
 				{queue?.length === 0 ? (
@@ -174,7 +194,7 @@ export default function UpNextPage() {
 									draggedItem === item.episode_uuid ? "opacity-50" : ""
 								}`}
 							>
-								<DisplayCardContent className="flex items-center gap-4">
+								<DisplayCardContent className="flex items-center gap-2 md:gap-4">
 									<div
 										className={cn(
 											"text-gray-400",
@@ -194,7 +214,7 @@ export default function UpNextPage() {
 											alt={item.episode?.title || ""}
 											width={80}
 											height={80}
-											className="rounded-md object-cover"
+											className="size-16 rounded-md object-cover md:size-20"
 										/>
 									</div>
 
@@ -213,7 +233,7 @@ export default function UpNextPage() {
 										>
 											{item.podcast?.name}
 										</Link>
-										<div className="mt-1 flex items-center gap-4 text-gray-500 text-xs">
+										<div className="mt-1 flex flex-col text-gray-500 text-xs md:flex-row md:items-center md:gap-4">
 											<span className="flex items-center gap-1">
 												<Clock className="h-3 w-3" />
 												{item.episode?.itunes_duration}

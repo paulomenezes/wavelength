@@ -1,5 +1,4 @@
 import { openai } from "@ai-sdk/openai";
-import { auth } from "@clerk/nextjs/server";
 import { streamText } from "ai";
 import { analyzePodcastQuery } from "~/lib/tools/analyze-podcast-query";
 import { searchPodcasts } from "~/lib/tools/search-podcasts";
@@ -18,6 +17,11 @@ Second option is to help them find podcasts in a specific period of time:
 - The user can specify the period of time they are interested in, for example: "last month", "last year", "last 5 years", "all time".
 - The user can also specify the name of the podcast, or the name of the podcast's host, or the name of the podcast's guest.
 - If the user sends a period, you can try to identify if the period is when the user listened to the episode or when the episode was released.
+
+----
+
+Always use the tools provided to answer the user's question.
+Always answer with html formatted text.
 `;
 
 export async function POST(req: Request) {

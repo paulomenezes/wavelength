@@ -176,8 +176,6 @@ export async function saveColors(podcastId: string, url: string) {
 	const vibrant = new Vibrant(url);
 	const palette = await vibrant.getPalette();
 
-	console.log("##PALETTE", palette);
-
 	try {
 		await databaseClient.podcast_colors.create({
 			data: {

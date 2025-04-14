@@ -4,7 +4,10 @@ import { ElevenLabsClient } from "elevenlabs";
 import { z } from "zod";
 import { env } from "~/env";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { getTranscript } from "~/services/transcript";
+import {
+	generateTranscriptAndUpsert,
+	getTranscript,
+} from "~/services/transcript";
 import { convertToSentences } from "~/utils/functions";
 
 export const transcriptionRouter = createTRPCRouter({
@@ -13,11 +16,25 @@ export const transcriptionRouter = createTRPCRouter({
 			z.object({
 				podcastId: z.string(),
 				episodeId: z.string(),
+			}),
+		)
+		.query(async ({ input }) => {
+			return getTranscript(input.podcastId, input.episodeId);
+		}),
+	generateTranscriptAndUpsert: publicProcedure
+		.input(
+			z.object({
+				podcastId: z.string(),
+				episodeId: z.string(),
 				url: z.string(),
 			}),
 		)
 		.mutation(async ({ input }) => {
-			return getTranscript(input.podcastId, input.episodeId, input.url);
+			return generateTranscriptAndUpsert(
+				input.podcastId,
+				input.episodeId,
+				input.url,
+			);
 		}),
 	transcriptionExpensive: publicProcedure
 		.input(z.object({ url: z.string() }))

@@ -18,6 +18,8 @@ import type { RSSBasicEpisode } from "~/types/rss-episode";
 import type { VectorDict } from "~/types/vector-dict";
 
 interface AudioPlayerContextType {
+	playbackRate: number;
+	changePlaybackRate: (rate: number) => void;
 	currentEpisode: RSSBasicEpisode | null;
 	setCurrentEpisode: (episode: RSSBasicEpisode) => void;
 	isPlaying: boolean;
@@ -30,6 +32,8 @@ interface AudioPlayerContextType {
 	setPodcast: (podcast: PodcastSeries) => void;
 	audioError: string | null;
 	audioRef: React.RefObject<HTMLAudioElement | null>;
+	wordsRef: React.RefObject<HTMLDivElement | null>;
+	containerScrolledRef: React.RefObject<boolean>;
 	currentTranscript: Vector<VectorDict>[] | undefined;
 	currentTranscriptIsLoading: boolean;
 }
@@ -58,8 +62,11 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 	const [currentTime, setCurrentTime] = useState(0);
 	const [podcast, setPodcast] = useState<PodcastSeries | null>(null);
 	const [audioError, setAudioError] = useState<string | null>(null);
+	const [playbackRate, setPlaybackRate] = useState(1);
 
 	const audioRef = useRef<HTMLAudioElement | null>(null);
+	const wordsRef = useRef<HTMLDivElement | null>(null);
+	const containerScrolledRef = useRef(false);
 	const lastUpdateTime = useRef(0);
 
 	const { mutateAsync: getListeningHistoryByEpisodeUuid } =
@@ -71,23 +78,50 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 	const { mutateAsync: markAsListened } =
 		api.queue.markAsListened.useMutation();
 
-	const {
-		data: currentTranscript,
-		mutate: getTranscript,
-		isPending: transcriptIsLoading,
-	} = api.transcription.getTranscript.useMutation();
+	// const { mutateAsync: generateTranscriptAndUpsert } =
+	// 	api.transcription.generateTranscriptAndUpsert.useMutation({
+	// 		onSuccess: () => {
+	// 			console.log("transcript upserted");
+
+	// 			if (podcast?.uuid && currentEpisode?.uuid) {
+	// 				getTranscript({
+	// 					podcastId: podcast.uuid,
+	// 					episodeId: currentEpisode.uuid,
+	// 				});
+	// 			}
+	// 		},
+	// 	});
+
+	const { data: currentTranscript, isPending: transcriptIsLoading } =
+		api.transcription.getTranscript.useQuery(
+			{
+				podcastId: podcast?.uuid ?? "",
+				episodeId: currentEpisode?.uuid ?? "",
+			},
+			{
+				enabled: !!podcast?.uuid && !!currentEpisode?.uuid,
+			},
+		);
+
+	console.log("currentTranscript", currentTranscript);
+
+	const transcriptRef = useRef<Vector<VectorDict>[]>([]);
+
+	useEffect(() => {
+		transcriptRef.current = currentTranscript ?? [];
+	}, [currentTranscript]);
 
 	const { data: queue } = api.queue.getQueue.useQuery();
 
 	useEffect(() => {
-		if (queue && queue.length > 0) {
+		if (queue && queue.length > 0 && !currentEpisode) {
 			const nextEpisode = queue[0];
 
 			if (nextEpisode) {
 				playEpisode(nextEpisode.episode, nextEpisode.podcast, true);
 			}
 		}
-	}, [queue]);
+	}, [queue, currentEpisode]);
 
 	useEffect(() => {
 		if (
@@ -95,7 +129,6 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 			Math.abs(currentTime - lastUpdateTime.current) > 10 &&
 			duration > 0
 		) {
-			console.log("updating listening history 1", { currentTime, duration });
 			updateListeningHistory({
 				episodeUuid: currentEpisode.uuid,
 				progress: currentTime,
@@ -141,6 +174,39 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 			audioRef.current.addEventListener("timeupdate", () => {
 				const currentTime = audioRef.current?.currentTime || 0;
 				setCurrentTime(currentTime);
+
+				// const nonActiveWords = wordsRef.current?.querySelectorAll(
+				// 	".group[data-active='true']",
+				// );
+
+				// for (const word of nonActiveWords ?? []) {
+				// 	(word as HTMLElement).dataset.active = "false";
+				// }
+
+				// const activeWordIndex = transcriptRef.current.findIndex((word) => {
+				// 	return word.metadata?.start && word.metadata.start >= currentTime;
+				// });
+
+				// const wordElement = wordsRef.current?.childNodes[activeWordIndex];
+				// if (wordElement) {
+				// 	(wordElement as HTMLElement).dataset.active = "true";
+				// 	if (!containerScrolledRef.current) {
+				// 		(wordElement as HTMLElement).scrollIntoView({
+				// 			behavior: "smooth",
+				// 			block: "center",
+				// 		});
+				// 	}
+				// }
+
+				// const prevElement = wordsRef.current?.childNodes[activeWordIndex - 1];
+				// if (prevElement) {
+				// 	(prevElement as HTMLElement).dataset.active = "true";
+				// }
+
+				// const nextElement = wordsRef.current?.childNodes[activeWordIndex + 1];
+				// if (nextElement) {
+				// 	(nextElement as HTMLElement).dataset.active = "true";
+				// }
 			});
 
 			audioRef.current.addEventListener("ended", () => {
@@ -182,10 +248,6 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 						audioRef.current.pause();
 						setIsPlaying(false);
 
-						console.log("updating listening history 2", {
-							currentTime,
-							duration,
-						});
 						updateListeningHistory({
 							episodeUuid: currentEpisode.uuid,
 							progress: currentTime,
@@ -212,7 +274,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 
 					audioRef.current.src = url;
 					audioRef.current.load();
-
+					audioRef.current.playbackRate = playbackRate;
 					if (!fromLoad) {
 						audioRef.current.play().catch((error) => {
 							setAudioError("Failed to play audio. Please try again.");
@@ -225,24 +287,18 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 					setCurrentEpisode(episode);
 					setCurrentTime(newCurrentTime);
 					setPodcast(podcast);
-
-					getTranscript({
-						podcastId: podcast.uuid,
-						episodeId: episode.uuid,
-						url,
-					});
 				}
 			}
 		},
 		[
 			isPlaying,
 			currentEpisode?.id,
-			getTranscript,
 			getListeningHistoryByEpisodeUuid,
 			updateListeningHistory,
 			currentTime,
 			duration,
 			currentEpisode?.uuid,
+			playbackRate,
 		],
 	);
 
@@ -255,10 +311,6 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 			audioRef.current.pause();
 
 			if (currentEpisode?.uuid) {
-				console.log("updating listening history 3", {
-					currentTime,
-					duration,
-				});
 				updateListeningHistory({
 					episodeUuid: currentEpisode.uuid,
 					progress: currentTime,
@@ -287,6 +339,13 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 		}
 	}, []);
 
+	const changePlaybackRate = useCallback((rate: number) => {
+		if (audioRef.current) {
+			audioRef.current.playbackRate = rate;
+			setPlaybackRate(rate);
+		}
+	}, []);
+
 	const value = {
 		currentEpisode,
 		isPlaying,
@@ -300,8 +359,12 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 		setCurrentEpisode,
 		audioError,
 		audioRef,
+		wordsRef,
+		containerScrolledRef,
 		currentTranscript,
 		currentTranscriptIsLoading: transcriptIsLoading,
+		playbackRate,
+		changePlaybackRate,
 	};
 
 	return (

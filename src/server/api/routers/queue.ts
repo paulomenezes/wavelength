@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import {
 	addEpisodeToQueue,
+	clearQueue,
 	getListeningHistory,
 	getListeningHistoryByEpisodeUuid,
 	getQueueWithDetails,
@@ -50,6 +51,11 @@ export const queueRouter = createTRPCRouter({
 				await removeFromQueue(ctx.user.userId, input.episodeUuid);
 			}
 		}),
+	clearQueue: publicProcedure.mutation(async ({ ctx }) => {
+		if (ctx.user.userId) {
+			await clearQueue(ctx.user.userId);
+		}
+	}),
 	reorderQueue: publicProcedure
 		.input(
 			z.object({

@@ -4,7 +4,8 @@ import type React from "react";
 
 import { useChat } from "@ai-sdk/react";
 import type { UIMessage } from "ai";
-import { Mic, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
+import { useSelectedLayoutSegments } from "next/navigation";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import {
 	ChatPodcastMessage,
@@ -14,8 +15,8 @@ import { PlaceholdersAndVanishInput } from "~/components/placeholder-input";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { useAudioPlayer } from "~/contexts/audio-player-context";
-import type { PodcastSeries } from "~/graphql/generated";
 import { cn } from "~/lib/utils";
+import { api } from "~/trpc/react";
 
 export function PodcastChat() {
 	const { currentEpisode } = useAudioPlayer();
@@ -24,6 +25,42 @@ export function PodcastChat() {
 	const [inputMode, setInputMode] = useState<"text" | "voice">("text");
 	const inputRef = useRef<HTMLInputElement>(null);
 	const chatContainerRef = useRef<HTMLDivElement>(null);
+
+	const segments = useSelectedLayoutSegments();
+
+	const { data: podcast } = api.podcast.getPodcastById.useQuery(
+		{
+			uuid: segments[1] ?? "",
+		},
+		{
+			enabled: segments.length >= 2 && segments[0] === "podcast",
+		},
+	);
+
+	const { data: episode } = api.podcast.getEpisodeById.useQuery(
+		{
+			uuid: segments[3] ?? "",
+		},
+		{
+			enabled:
+				segments.length >= 3 &&
+				segments[0] === "podcast" &&
+				segments[2] === "episode",
+		},
+	);
+
+	const { data: transcript } = api.transcription.getTranscript.useQuery(
+		{
+			podcastId: segments[1] ?? "",
+			episodeId: segments[3] ?? "",
+		},
+		{
+			enabled:
+				segments.length >= 3 &&
+				segments[0] === "podcast" &&
+				segments[2] === "episode",
+		},
+	);
 
 	// Placeholder texts to rotate through
 	const placeholders = [
@@ -41,19 +78,55 @@ export function PodcastChat() {
 		"Find podcasts with short episodes",
 	];
 
-	const { messages, input, handleInputChange, handleSubmit, setInput, append } =
-		useChat({
-			api: "/api/chat",
-			onFinish: () => {
-				// Scroll to bottom when new message arrives
-				setTimeout(() => {
-					if (chatContainerRef.current) {
-						chatContainerRef.current.scrollTop =
-							chatContainerRef.current.scrollHeight;
-					}
-				}, 100);
-			},
-		});
+	const {
+		messages,
+		input,
+		handleInputChange,
+		handleSubmit,
+		append,
+		setMessages,
+	} = useChat({
+		api: "/api/chat",
+		onFinish: () => {
+			// Scroll to bottom when new message arrives
+			setTimeout(() => {
+				if (chatContainerRef.current) {
+					chatContainerRef.current.scrollTop =
+						chatContainerRef.current.scrollHeight;
+				}
+			}, 100);
+		},
+	});
+
+	useEffect(() => {
+		const newMessages = [
+			...(podcast
+				? ([
+						{
+							id: "podcast-info-id",
+							role: "system",
+							content: `You are a helpful assistant that can help with podcast recommendations and search for podcasts.
+The user is currently on the page of the podcast: ${podcast?.name}, so maybe you can help them find episodes of this podcast or answer questions about it.
+
+Here is some information about the podcast: ${podcast?.name} and description: ${podcast?.description}.
+Here is the title of the latest 10 episodes: ${podcast?.episodes?.map((episode) => episode?.name).join(", ")}`,
+						},
+					] as const)
+				: []),
+			...(episode
+				? ([
+						{
+							id: "episode-info-id",
+							role: "system",
+							content: `Here is some information about the episode: ${episode?.title} and description: ${episode?.description}.
+Here is the transcript of the episode: ${transcript?.map((t) => t.data).join("\n")}`,
+						},
+					] as const)
+				: []),
+		];
+
+		setMessages((prev) => [...prev, ...newMessages]);
+	}, [podcast, episode, transcript, setMessages]);
 
 	// Scroll to bottom when chat opens
 	useEffect(() => {
@@ -156,6 +229,10 @@ export function PodcastChat() {
 	};
 
 	const renderMessageContent = useCallback((message: UIMessage) => {
+		if (message.role === "system") {
+			return null;
+		}
+
 		if (message.parts && message.parts.length > 0) {
 			return message.parts.map((part) => {
 				if (part.type === "text") {

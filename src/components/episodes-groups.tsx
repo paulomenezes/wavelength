@@ -34,8 +34,6 @@ export function EpisodesGroups({
 		},
 	);
 
-	console.log(groupedEpisodes);
-
 	if (!groupedEpisodes || groupedEpisodes?.length === 0) {
 		return null;
 	}

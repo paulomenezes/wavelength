@@ -1,5 +1,7 @@
 import type { Vector } from "@upstash/vector";
 import { ElevenLabsClient } from "elevenlabs";
+import { revalidateTag } from "next/cache";
+import { cacheTag } from "next/dist/server/use-cache/cache-tag";
 import { v4 as uuidv4 } from "uuid";
 import { env } from "~/env";
 import { vectorClient } from "~/lib/client-vector";
@@ -23,7 +25,7 @@ export async function generateTranscript(url: string) {
 	});
 
 	const sentences = convertToSentences(result.words);
-	console.log(sentences);
+	console.log("## TRANSCRIPT GENERATED", sentences.length);
 
 	return sentences;
 }
@@ -31,9 +33,9 @@ export async function generateTranscript(url: string) {
 export async function getTranscript(
 	podcastId: string,
 	episodeId: string,
-	url?: string,
 ): Promise<Vector<VectorDict>[]> {
-	"use cache";
+	// "use cache";
+	// cacheTag(`podcast-${podcastId}-${episodeId}-transcript`);
 
 	const allData: Vector<VectorDict>[] = [];
 
@@ -46,36 +48,6 @@ export async function getTranscript(
 	});
 
 	console.log("## SIZE First Page", episodeId, result.vectors.length);
-
-	if (result.vectors.length === 0 && url) {
-		// const sentences = await generateTranscript(url);
-		// const batchSize = 1000;
-		// for (let i = 0; i < sentences.length; i += batchSize) {
-		// 	const batch = sentences.slice(i, i + batchSize);
-		// 	await vectorClient.upsert(
-		// 		batch.map((d) => ({
-		// 			id: `${podcastId}-${episodeId}-${uuidv4()}`,
-		// 			data: d.text,
-		// 			metadata: {
-		// 				podcastId,
-		// 				episodeId,
-		// 				start: d.start,
-		// 				end: d.end,
-		// 			},
-		// 		})),
-		// 	);
-		// }
-		// return sentences.map((d) => ({
-		// 	id: `${podcastId}-${episodeId}-${uuidv4()}`,
-		// 	data: d.text,
-		// 	metadata: {
-		// 		podcastId,
-		// 		episodeId,
-		// 		start: d.start,
-		// 		end: d.end,
-		// 	},
-		// }));
-	}
 
 	allData.push(...result.vectors);
 
@@ -116,4 +88,45 @@ export async function getTranscript(
 
 		return startA - startB;
 	});
+}
+
+export async function generateTranscriptAndUpsert(
+	podcastId: string,
+	episodeId: string,
+	url: string,
+): Promise<Vector<VectorDict>[]> {
+	const sentences = await generateTranscript(url);
+	const batchSize = 1000;
+
+	for (let i = 0; i < sentences.length; i += batchSize) {
+		const batch = sentences.slice(i, i + batchSize);
+
+		await vectorClient.upsert(
+			batch.map((d) => ({
+				id: `${podcastId}-${episodeId}-${uuidv4()}`,
+				data: d.text,
+				metadata: {
+					podcastId,
+					episodeId,
+					start: d.start,
+					end: d.end,
+				},
+			})),
+		);
+
+		console.log("## UPSERTED", i, batch.length);
+	}
+
+	revalidateTag(`podcast-${podcastId}-${episodeId}-transcript`);
+
+	return sentences.map((d) => ({
+		id: `${podcastId}-${episodeId}-${uuidv4()}`,
+		data: d.text,
+		metadata: {
+			podcastId,
+			episodeId,
+			start: d.start,
+			end: d.end,
+		},
+	}));
 }

@@ -1,10 +1,14 @@
+import { openai } from "@ai-sdk/openai";
+import { generateObject, generateText } from "ai";
 import { format, parse } from "date-fns";
 import { Prisma } from "generated/prisma";
+import { z } from "zod";
 import type { Person } from "~/graphql/generated";
 import { databaseClient } from "~/lib/client-database";
 import type { ProcessedEpisode } from "~/types/processed_episodes";
 import type { RSSEpisode } from "~/types/rss-episode";
 import { isNumber, nonNullable } from "~/utils/functions";
+import { getTranscript } from "./transcript";
 
 export async function getEpisodesByPodcastId(
 	podcastId: string,
@@ -153,8 +157,6 @@ export async function saveEpisodes(
 		skipDuplicates: true,
 	});
 
-	console.log(episodesToInsert.count);
-
 	const [episodePeople, episodeEnclosures, episodeTranscripts] =
 		await Promise.allSettled([
 			databaseClient.podcast_episode_people.createMany({
@@ -195,6 +197,167 @@ export async function saveEpisodes(
 				),
 			}),
 		]);
+}
 
-	console.log(episodePeople, episodeEnclosures, episodeTranscripts);
+export async function getEpisodeSummary(episodeId: string) {
+	const summary = await databaseClient.podcast_episode_summary.findFirst({
+		where: {
+			episode_uuid: episodeId,
+		},
+	});
+
+	if (summary) {
+		return summary.summary;
+	}
+
+	const episode = await databaseClient.podcast_episodes.findFirst({
+		where: {
+			OR: [
+				{ id: Number.isNaN(Number(episodeId)) ? undefined : Number(episodeId) },
+				{ uuid: episodeId },
+			],
+		},
+	});
+
+	if (!episode || !episode.podcast_uuid) {
+		return null;
+	}
+
+	const transcript = await getTranscript(episode.podcast_uuid, episode.uuid);
+	const transcriptText = transcript.map((t) => t.data).join("\n");
+
+	const newSummary = await generateText({
+		model: openai("gpt-4o-mini"),
+		messages: [
+			{
+				role: "system",
+				content: `You are a helpful assistant that summarizes podcasts.
+
+				Here is the transcript of the episode:
+				${transcriptText}.
+
+				Here is the description of the episode:
+				${episode.description}.
+
+				Here is the title of the episode:
+				${episode.title}.
+				
+				You should summarize the episode in a few sentences.
+				You should also include the main topics discussed in the episode.
+				You should write the summary in the same language as the transcript.
+				You should not include any markdown formatting.
+				You should return the summary in html format but without the <html> tag.
+				You should return only english summary.
+				`,
+			},
+		],
+	});
+
+	await databaseClient.podcast_episode_summary.create({
+		data: {
+			episode_uuid: episodeId,
+			summary: newSummary.text,
+		},
+	});
+
+	return newSummary.text;
+}
+
+export async function getEpisodeChapters(episodeId: string) {
+	const chapters = await databaseClient.chapters.findMany({
+		where: {
+			episode_uuid: episodeId,
+		},
+	});
+
+	if (chapters.length > 0) {
+		return chapters;
+	}
+
+	const episode = await databaseClient.podcast_episodes.findFirst({
+		where: {
+			OR: [
+				{ id: Number.isNaN(Number(episodeId)) ? undefined : Number(episodeId) },
+				{ uuid: episodeId },
+			],
+		},
+	});
+
+	if (!episode || !episode.podcast_uuid) {
+		return null;
+	}
+
+	const transcript = await getTranscript(episode.podcast_uuid, episode.uuid);
+	const transcriptText = transcript
+		.map((t) => `${t.metadata?.start} - ${t.metadata?.end}: ${t.data}`)
+		.join("\n");
+
+	const schema = z.object({
+		chapters: z
+			.array(
+				z
+					.object({
+						start_time: z
+							.number()
+							.describe("The start time of the chapter in seconds"),
+						end_time: z
+							.number()
+							.describe("The end time of the chapter in seconds"),
+						title: z.string().describe("The title of the chapter"),
+					})
+					.describe("The chapters of the episode"),
+			)
+			.describe("The chapters of the episode"),
+	});
+
+	const newChapters = await generateObject({
+		model: openai("gpt-4o"),
+		schema,
+		messages: [
+			{
+				role: "system",
+				content: `You are a helpful assistant that creates chapters for podcasts. 
+				The chapter should be about a topic discussed in the episode for a few minutes, 
+				not about things like "the beginning of the episode", "the end of the episode", "introduction", "outro", etc,
+				or even things talked only in a setence or a few seconds.
+				The chapter should no be specific, bring the main topics discussed in the episode.
+				Do not include the name of the guest in the chapter title.
+
+				Ignore the ads in the transcript, they are not part of the episode, ignore everything that is not in english.
+
+				Here is the transcript of the episode:
+				${transcriptText}.
+
+				Here is the title of the episode:
+				${episode.title}.
+
+				Here is the description of the episode:
+				${episode.description}.
+
+				You should create chapters for the episode.
+				You should return the chapters in json format.
+
+				The chapters must be concise and to the point, make them as short as possible.
+				Make between 3 and 10 chapters, depending on the length of the episode.
+				Do not exceed 10 chapters.
+
+				Maybe the podcast has some ads inside, you should not include them in the chapters.
+				Maybe those ads are in another language, you should not include them in the chapters.
+				
+				You should return only english chapters.
+				`,
+			},
+		],
+	});
+
+	await databaseClient.chapters.createMany({
+		data: newChapters.object.chapters.map((chapter) => ({
+			episode_uuid: episodeId,
+			start_time: chapter.start_time,
+			end_time: chapter.end_time,
+			title: chapter.title,
+		})),
+	});
+
+	return newChapters.object.chapters;
 }

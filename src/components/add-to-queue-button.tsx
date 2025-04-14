@@ -1,7 +1,7 @@
 "use client";
 
 import type { VariantProps } from "class-variance-authority";
-import { ListMusic } from "lucide-react";
+import { ListMusic, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { PodcastSeries } from "~/graphql/generated";
 import { cn } from "~/lib/utils";
@@ -20,7 +20,7 @@ export function AddToQueueButton({
 	size?: VariantProps<typeof buttonVariants>["size"];
 	variant?: VariantProps<typeof buttonVariants>["variant"];
 }) {
-	const { mutateAsync: addEpisodeToQueueMutation } =
+	const { mutateAsync: addEpisodeToQueueMutation, isPending } =
 		api.queue.addEpisodeToQueue.useMutation();
 
 	return (
@@ -38,8 +38,13 @@ export function AddToQueueButton({
 				);
 			}}
 			variant={variant}
+			disabled={isPending}
 		>
-			<ListMusic className={cn(size === "lg" ? "size-5" : "size-4")} />
+			{isPending ? (
+				<Loader2 className="h-4 w-4 animate-spin" />
+			) : (
+				<ListMusic className={cn(size === "lg" ? "size-5" : "size-4")} />
+			)}
 			Add to queue
 		</Button>
 	);

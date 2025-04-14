@@ -247,6 +247,16 @@ model user_settings {
   @@index([user_id], map: "idx_user_settings_user_id")
 }
 
+model podcast_episode_summary {
+  id           BigInt    @id @default(autoincrement())
+  episode_uuid String?   @db.Text
+  summary      String?
+  audio_url    String?
+  created_at   DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([episode_uuid], map: "idx_podcast_episode_summary_episode_uuid")
+}
+
 enum group_rule_type {
   word
   weekday
