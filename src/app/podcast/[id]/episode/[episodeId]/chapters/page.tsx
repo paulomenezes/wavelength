@@ -1,3 +1,5 @@
+import { PodcastIcon, RssIcon, TableOfContentsIcon } from "lucide-react";
+import { EmptyState } from "~/components/empty-state";
 import { api } from "~/trpc/server";
 import { formatTime } from "~/utils/functions";
 
@@ -11,8 +13,10 @@ export default async function EpisodeChaptersPage({
 	]);
 
 	return (
-		<>
-			<div className="max-w-3xl">
+		<div className="max-w-3xl">
+			<h2 className="mb-3 font-semibold text-xl">Chapters</h2>
+
+			{chapters ? (
 				<div className="space-y-4">
 					{chapters?.map((chapter) => (
 						<div key={chapter.title}>
@@ -26,7 +30,13 @@ export default async function EpisodeChaptersPage({
 						</div>
 					))}
 				</div>
-			</div>
-		</>
+			) : (
+				<EmptyState
+					title="No chapters found for this episode"
+					description="Please check back later"
+					icons={[RssIcon, TableOfContentsIcon, PodcastIcon]}
+				/>
+			)}
+		</div>
 	);
 }

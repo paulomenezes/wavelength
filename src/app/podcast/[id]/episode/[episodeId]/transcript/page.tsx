@@ -12,15 +12,13 @@ export default async function EpisodeTranscriptPage({
 	]);
 
 	return (
-		<>
-			<div className="max-w-3xl">
-				<TranscriptView
-					transcript={transcript}
-					podcastId={id}
-					episodeId={episodeId}
-					url={episode?.enclosures.at(0)?.url}
-				/>
-			</div>
-		</>
+		<div className="max-w-3xl">
+			<TranscriptView
+				transcript={transcript}
+				podcastId={id}
+				episodeId={episodeId}
+				url={episode?.enclosures.at(0)?.url}
+			/>
+		</div>
 	);
 }

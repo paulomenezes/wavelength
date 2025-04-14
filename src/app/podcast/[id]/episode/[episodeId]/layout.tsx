@@ -1,11 +1,11 @@
-import { ArrowLeft, Bookmark, CalendarIcon, Clock } from "lucide-react";
+import { ArrowLeft, CalendarIcon, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { AddToQueueButton } from "~/components/add-to-queue-button";
 import { EpisodeTabs } from "~/components/episode-tabs";
 import { PlayButton } from "~/components/play-button";
 import { PodcastHeader } from "~/components/podcast-header";
-import { Button } from "~/components/ui/button";
+import { SaveButton } from "~/components/save-button";
 import { api } from "~/trpc/server";
 import { getDateDistance } from "~/utils/functions";
 
@@ -18,11 +18,10 @@ export default async function EpisodeLayout({
 }) {
 	const { id, episodeId } = await params;
 
-	const [podcast, episode, colors, summary] = await Promise.all([
+	const [podcast, episode, colors] = await Promise.all([
 		api.podcast.getPodcastById({ uuid: id }),
 		api.podcast.getEpisodeById({ uuid: episodeId }),
 		api.podcast.getColors({ podcastId: id }),
-		api.episodes.getEpisodeSummary({ episodeId }),
 	]);
 
 	if (!podcast) {
@@ -96,10 +95,11 @@ export default async function EpisodeLayout({
 								podcast={podcast}
 								variant="secondary"
 							/>
-							<Button type="button" variant="outline" size="lg">
-								<Bookmark className="h-4 w-4" />
-								Save
-							</Button>
+							<SaveButton
+								episode={episode}
+								podcast={podcast}
+								variant="outline"
+							/>
 							<AddToQueueButton
 								episode={episode}
 								podcast={podcast}

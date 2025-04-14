@@ -288,6 +288,11 @@ export async function getEpisodeChapters(episodeId: string) {
 	}
 
 	const transcript = await getTranscript(episode.podcast_uuid, episode.uuid);
+
+	if (!transcript || transcript.length === 0) {
+		return null;
+	}
+
 	const transcriptText = transcript
 		.map((t) => `${t.metadata?.start} - ${t.metadata?.end}: ${t.data}`)
 		.join("\n");

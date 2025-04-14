@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, House, PanelsTopLeft } from "lucide-react";
+import { MessageSquareText, PodcastIcon, TableOfContents } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area";
@@ -22,7 +22,7 @@ export function EpisodeTabs() {
 						className="rounded-full px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none"
 					>
 						<Link href={`/podcast/${podcastId}/episode/${episodeId}`}>
-							<House
+							<PodcastIcon
 								className="-ms-0.5 me-1.5"
 								size={16}
 								strokeWidth={2}
@@ -39,7 +39,7 @@ export function EpisodeTabs() {
 						<Link
 							href={`/podcast/${podcastId}/episode/${episodeId}/transcript`}
 						>
-							<PanelsTopLeft
+							<MessageSquareText
 								className="-ms-0.5 me-1.5"
 								size={16}
 								strokeWidth={2}
@@ -54,7 +54,7 @@ export function EpisodeTabs() {
 						asChild
 					>
 						<Link href={`/podcast/${podcastId}/episode/${episodeId}/chapters`}>
-							<Box
+							<TableOfContents
 								className="-ms-0.5 me-1.5"
 								size={16}
 								strokeWidth={2}

@@ -36,7 +36,7 @@ export default async function EpisodePage({
 					</div>
 				</div>
 
-				<div className="pt-4">
+				{/* <div className="pt-4">
 					<h2 className="mb-3 font-semibold text-xl">Join the Conversation</h2>
 					<div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4">
 						<p className="text-gray-700">Share your thoughts on this episode</p>
@@ -48,7 +48,7 @@ export default async function EpisodePage({
 							Comment
 						</button>
 					</div>
-				</div>
+				</div> */}
 			</div>
 		</div>
 	);
