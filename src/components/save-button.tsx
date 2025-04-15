@@ -1,7 +1,8 @@
 "use client";
 
+import { SignInButton, useUser } from "@clerk/nextjs";
 import type { VariantProps } from "class-variance-authority";
-import { Bookmark, Loader2 } from "lucide-react";
+import { Bookmark, Loader2, LogInIcon } from "lucide-react";
 import { toast } from "sonner";
 import type { PodcastSeries } from "~/graphql/generated";
 import { cn } from "~/lib/utils";
@@ -20,13 +21,20 @@ export function SaveButton({
 	size?: VariantProps<typeof buttonVariants>["size"];
 	variant?: VariantProps<typeof buttonVariants>["variant"];
 }) {
+	const { user } = useUser();
+
 	const {
 		data: isFavorite,
 		refetch,
 		isLoading: isLoadingIsFavorite,
-	} = api.favorites.isFavorite.useQuery({
-		episodeId: episode.uuid,
-	});
+	} = api.favorites.isFavorite.useQuery(
+		{
+			episodeId: episode.uuid,
+		},
+		{
+			enabled: !!user,
+		},
+	);
 
 	const { mutateAsync: addFavoriteMutation, isPending: isAddingFavorite } =
 		api.favorites.addFavorite.useMutation({
@@ -44,6 +52,17 @@ export function SaveButton({
 
 	const isPending =
 		isLoadingIsFavorite || isAddingFavorite || isRemovingFavorite;
+
+	if (!user) {
+		return (
+			<SignInButton>
+				<Button type="button" variant={variant} size={size}>
+					<LogInIcon className="mr-2 h-4 w-4" />
+					Sign in to save
+				</Button>
+			</SignInButton>
+		);
+	}
 
 	return (
 		<Button

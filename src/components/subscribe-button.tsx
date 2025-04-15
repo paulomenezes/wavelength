@@ -1,6 +1,7 @@
 "use client";
 
-import { CheckIcon, Loader2, Plus } from "lucide-react";
+import { SignInButton, useUser } from "@clerk/nextjs";
+import { CheckIcon, Loader2, LogInIcon, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "~/trpc/react";
 import { Button } from "./ui/button";
@@ -14,14 +15,21 @@ export function SubscribeButton({
 	groupKey?: string;
 	buttonVariant?: "secondary" | "link";
 }) {
+	const { user } = useUser();
+
 	const {
 		data: isSubscribed,
 		refetch,
 		isLoading: isLoadingIsSubscribed,
-	} = api.subscription.isSubscribed.useQuery({
-		podcastUuid,
-		groupKey,
-	});
+	} = api.subscription.isSubscribed.useQuery(
+		{
+			podcastUuid,
+			groupKey,
+		},
+		{
+			enabled: !!user,
+		},
+	);
 
 	const { mutateAsync: createSubscription, isPending: isCreatingSubscription } =
 		api.subscription.createSubscription.useMutation({
@@ -35,6 +43,17 @@ export function SubscribeButton({
 
 	const isLoading =
 		isLoadingIsSubscribed || isCreatingSubscription || isDeletingSubscription;
+
+	if (!user) {
+		return (
+			<SignInButton>
+				<Button type="button" variant={buttonVariant} size="lg">
+					<LogInIcon className="mr-2 h-4 w-4" />
+					Sign in to subscribe
+				</Button>
+			</SignInButton>
+		);
+	}
 
 	return (
 		<Button

@@ -33,16 +33,19 @@ export function TranscriptView({
 	const [search, setSearch] = useState("");
 	const router = useRouter();
 
-	const filteredTranscript = transcript.filter((item) =>
-		item.data?.toLowerCase().includes(search.toLowerCase()),
-	);
+	const {
+		mutateAsync: generateTranscript,
+		isPending,
+		data,
+	} = api.transcription.generateTranscriptAndUpsert.useMutation({
+		onSuccess: () => {
+			router.refresh();
+		},
+	});
 
-	const { mutateAsync: generateTranscript, isPending } =
-		api.transcription.generateTranscriptAndUpsert.useMutation({
-			onSuccess: () => {
-				router.refresh();
-			},
-		});
+	const filteredTranscript = (
+		data && data.length > 0 ? data : transcript
+	).filter((item) => item.data?.toLowerCase().includes(search.toLowerCase()));
 
 	return (
 		<div>

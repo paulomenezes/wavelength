@@ -1,5 +1,6 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
 import type { VariantProps } from "class-variance-authority";
 import { ListMusic, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -20,8 +21,14 @@ export function AddToQueueButton({
 	size?: VariantProps<typeof buttonVariants>["size"];
 	variant?: VariantProps<typeof buttonVariants>["variant"];
 }) {
+	const { user } = useUser();
+
 	const { mutateAsync: addEpisodeToQueueMutation, isPending } =
 		api.queue.addEpisodeToQueue.useMutation();
+
+	if (!user) {
+		return null;
+	}
 
 	return (
 		<Button

@@ -1,4 +1,3 @@
-import { useUser } from "@clerk/nextjs";
 import { format } from "date-fns";
 import { Clock, FileText } from "lucide-react";
 import type React from "react";
@@ -21,7 +20,6 @@ export function CategoryFilterCard({
 	episodeGroup: GroupedEpisodes;
 	podcast: PodcastSeries;
 }) {
-	const { user } = useUser();
 	const [{ group }, setPodcastSearch] = usePodcastSearch();
 
 	const isSelected = group === episodeGroup.key;
@@ -74,7 +72,7 @@ export function CategoryFilterCard({
 			</DisplayCardContent>
 
 			<DisplayCardFooter>
-				{podcast.uuid && user && (
+				{podcast.uuid && (
 					<SubscribeButton
 						podcastUuid={podcast.uuid}
 						groupKey={episodeGroup.key}

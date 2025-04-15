@@ -7,13 +7,18 @@ import {
 	SignedOut,
 	UserButton,
 } from "@clerk/nextjs";
-import { LogInIcon, LogOutIcon } from "lucide-react";
+import { LogInIcon, LogOutIcon, Search } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { cn } from "~/lib/utils";
+import { PodcastChat } from "./chat";
 import { Button } from "./ui/button";
+import { DialogTrigger } from "./ui/dialog";
 
 export function NavBar() {
 	const [isSearchOpen, setIsSearchOpen] = useState(false);
+	const pathname = usePathname();
 
 	// Handle keyboard shortcut to open search
 	useEffect(() => {
@@ -80,6 +85,27 @@ export function NavBar() {
 				</div>
 
 				<div className="flex items-center gap-2">
+					<PodcastChat>
+						<DialogTrigger asChild>
+							<Button
+								type="button"
+								variant="outline"
+								className={cn(
+									"relative mr-4 h-9 w-9 p-0 lg:w-60 lg:justify-start lg:px-3",
+									pathname === "/" && "hidden",
+								)}
+							>
+								<Search className="h-4 w-4 xl:mr-2" />
+								<span className="hidden lg:inline-flex">
+									Search podcasts...
+								</span>
+								<kbd className="-translate-y-1/2 absolute top-1/2 right-2 hidden h-5 transform select-none items-center gap-1 rounded-full border bg-muted px-2 font-medium font-mono text-[10px] text-muted-foreground opacity-100 lg:inline-flex">
+									<span className="pt-[0.5px] text-xs">⌘</span>K
+								</kbd>
+							</Button>
+						</DialogTrigger>
+					</PodcastChat>
+
 					<SignedOut>
 						<SignInButton>
 							<Button variant="outline">

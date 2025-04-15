@@ -4,7 +4,7 @@ import type React from "react";
 
 import { useChat } from "@ai-sdk/react";
 import type { UIMessage } from "ai";
-import { Search, X } from "lucide-react";
+import { Search } from "lucide-react";
 import { useSelectedLayoutSegments } from "next/navigation";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -12,17 +12,19 @@ import {
 	ChatTextMessage,
 } from "~/components/chat-messages";
 import { PlaceholdersAndVanishInput } from "~/components/placeholder-input";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
-import { useAudioPlayer } from "~/contexts/audio-player-context";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
-export function PodcastChat() {
-	const { currentEpisode } = useAudioPlayer();
+export function PodcastChat({
+	children,
+	showPrompts = false,
+}: {
+	children: React.ReactNode;
+	showPrompts?: boolean;
+}) {
 	const [isOpen, setIsOpen] = useState(false);
 	const [showSuggestions, setShowSuggestions] = useState(false);
-	const [inputMode, setInputMode] = useState<"text" | "voice">("text");
 	const inputRef = useRef<HTMLInputElement>(null);
 	const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -61,15 +63,6 @@ export function PodcastChat() {
 				segments[2] === "episode",
 		},
 	);
-
-	// Placeholder texts to rotate through
-	const placeholders = [
-		"Search for podcasts about technology...",
-		"Find true crime podcasts...",
-		"Ask for podcast recommendations...",
-		"Discover podcasts with short episodes...",
-		"Search for podcasts by topic or host...",
-	];
 
 	// Suggested questions
 	const suggestions = [
@@ -196,10 +189,6 @@ Here is the transcript of the episode: ${transcript?.map((t) => t.data).join("\n
 		setShowSuggestions(false);
 	};
 
-	const toggleInputMode = () => {
-		setInputMode(inputMode === "text" ? "voice" : "text");
-	};
-
 	const handleSuggestionClick = (suggestion: string) => {
 		setIsOpen(true);
 		setShowSuggestions(false);
@@ -302,140 +291,72 @@ Here is the transcript of the episode: ${transcript?.map((t) => t.data).join("\n
 	}, []);
 
 	return (
-		<>
-			<div className="fixed right-0 bottom-0 hidden h-72 w-[500px] bg-gradient-to-br from-transparent via-transparent to-muted lg:block" />
+		<div>
+			<div className={cn("flex items-center")}>
+				<Dialog open={isOpen} onOpenChange={setIsOpen}>
+					{children}
+					<DialogContent className="flex flex-col justify-between">
+						<DialogHeader className="hidden">
+							<DialogTitle>Podcast Chat</DialogTitle>
+						</DialogHeader>
 
-			{/* Chat body - floating above the input when open */}
-			<div
-				className={cn(
-					"fixed right-8 z-30 h-[650px] w-[350px] transition-all duration-300 ease-in-out sm:w-[416px]",
-					currentEpisode ? "bottom-[136px]" : "bottom-8",
-					isOpen
-						? "transform-none opacity-100"
-						: "pointer-events-none translate-y-4 opacity-0",
-				)}
-			>
-				<Card className="relative flex h-full w-full flex-col gap-1 overflow-hidden border bg-gray-50 py-0 pb-16 shadow-sm">
-					<div className="flex items-center justify-end p-3">
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={toggleChat}
-							className="h-8 w-8"
-						>
-							<X className="h-4 w-4" />
-						</Button>
-					</div>
-
-					<CardContent
-						ref={chatContainerRef}
-						className="flex-1 space-y-3 overflow-y-auto p-3"
-					>
-						{messages.length === 0 ? (
-							<div className="flex h-full flex-col items-center justify-center text-center text-gray-500">
-								<Search className="mb-3 h-10 w-10 opacity-50" />
-								<p className="font-medium text-base">
-									Search for podcasts or ask questions
-								</p>
-								<p className="text-xs">
-									Try "Find podcasts about AI" or "What are trending podcasts?"
-								</p>
-							</div>
-						) : (
-							messages.map(renderMessageContent)
-						)}
-						{/* {isLoading && (
-							<div className="flex justify-start">
-								<div className="max-w-[80%] rounded-lg bg-muted px-3 py-2">
-									<div className="flex space-x-2">
-										<div
-											className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
-											style={{ animationDelay: "0ms" }}
-										/>
-										<div
-											className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
-											style={{ animationDelay: "150ms" }}
-										/>
-										<div
-											className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
-											style={{ animationDelay: "300ms" }}
-										/>
-									</div>
+						<div className="mt-8 flex-1 space-y-3 overflow-y-auto p-4">
+							{messages.length === 0 ? (
+								<div className="flex h-full flex-col items-center justify-center text-center text-gray-500">
+									<Search className="mb-3 h-10 w-10 opacity-50" />
+									<p className="font-medium text-base">
+										Search for podcasts or ask questions
+									</p>
+									<p className="text-xs">
+										Try "Find podcasts about AI" or "What are trending
+										podcasts?"
+									</p>
 								</div>
-							</div>
-						)} */}
-					</CardContent>
-				</Card>
+							) : (
+								messages.map(renderMessageContent)
+							)}
+						</div>
+
+						<div className="px-2 py-2.5">
+							<PlaceholdersAndVanishInput
+								onChange={handleInputChangeWithSideEffects}
+								onSubmit={(e) => {
+									handleSubmit(e);
+									if (!isOpen) setIsOpen(true);
+								}}
+								value={input}
+								// disabled={isLoading}
+								className={cn("transition-all duration-300")}
+								showSparkle={true} // Always show sparkle
+								onFocus={handleInputFocus}
+								isOpen={isOpen}
+								inputRef={inputRef}
+							/>
+						</div>
+					</DialogContent>
+				</Dialog>
 			</div>
 
-			{/* Suggestion bubbles */}
-			<div
-				className={cn(
-					"fixed right-10 z-50 w-[350px] transition-all duration-300 ease-in-out sm:w-[400px]",
-					currentEpisode ? "bottom-[204px]" : "bottom-[100px]",
-					showSuggestions
-						? "transform-none opacity-100"
-						: "pointer-events-none translate-y-4 opacity-0",
-				)}
-			>
-				<div className="mb-2 flex flex-col items-end space-y-2">
-					{suggestions.map((suggestion, index) => (
-						<button
-							key={suggestion}
-							type="button"
-							onClick={() => handleSuggestionClick(suggestion)}
-							className="max-w-[85%] cursor-pointer rounded-full border bg-gray-100 px-4 py-2 text-left text-foreground text-sm shadow-md transition-colors hover:bg-gray-200"
-						>
-							{suggestion}
-						</button>
-					))}
-				</div>
-			</div>
-
-			{/* Input area with mic toggle */}
-			<div
-				className={cn(
-					"fixed right-10 z-40 flex items-center",
-					currentEpisode ? "bottom-[146px]" : "bottom-[42px]",
-				)}
-			>
-				{/* Animated input field */}
-				{inputMode === "text" && (
-					<PlaceholdersAndVanishInput
-						placeholders={placeholders}
-						onChange={handleInputChangeWithSideEffects}
-						onSubmit={(e) => {
-							handleSubmit(e);
-							if (!isOpen) setIsOpen(true);
-						}}
-						value={input}
-						// disabled={isLoading}
-						className={cn(
-							"transition-all duration-300",
-							isOpen || showSuggestions
-								? "w-[300px] sm:w-[400px]"
-								: "w-[250px] sm:w-[400px]",
-						)}
-						showSparkle={true} // Always show sparkle
-						onFocus={handleInputFocus}
-						isOpen={isOpen}
-						inputRef={inputRef}
-					/>
-				)}
-
-				{/* Mic toggle button */}
-				{/* <Button
-					onClick={toggleInputMode}
-					variant={inputMode === "voice" ? "destructive" : "outline"}
-					size="icon"
+			{showPrompts && (
+				<div
 					className={cn(
-						"ml-2 h-12 w-12 rounded-full shadow-md",
-						inputMode === "voice" ? "bg-red-500 hover:bg-red-600" : "",
+						"mx-4 mt-4 hidden max-w-4xl transform-none opacity-100 transition-all duration-300 ease-in-out md:block lg:mx-auto",
 					)}
 				>
-					<Mic className="h-5 w-5" />
-				</Button> */}
-			</div>
-		</>
+					<div className="mb-2 flex flex-row items-end gap-2">
+						{suggestions.map((suggestion) => (
+							<button
+								key={suggestion}
+								type="button"
+								onClick={() => handleSuggestionClick(suggestion)}
+								className="max-w-[85%] cursor-pointer whitespace-nowrap rounded-full border bg-gray-100 px-4 py-2 text-left text-foreground text-xs shadow-md transition-colors hover:bg-gray-200"
+							>
+								{suggestion}
+							</button>
+						))}
+					</div>
+				</div>
+			)}
+		</div>
 	);
 }

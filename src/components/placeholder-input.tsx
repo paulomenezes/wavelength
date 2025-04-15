@@ -6,8 +6,16 @@ import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "~/lib/utils";
 
+// Placeholder texts to rotate through
+const placeholders = [
+	"Search for podcasts about technology...",
+	"Find true crime podcasts...",
+	"Ask for podcast recommendations...",
+	"Discover podcasts with short episodes...",
+	"Search for podcasts by topic or host...",
+];
+
 export function PlaceholdersAndVanishInput({
-	placeholders,
 	onChange,
 	onSubmit,
 	value,
@@ -20,7 +28,6 @@ export function PlaceholdersAndVanishInput({
 	isOpen = false,
 	inputRef,
 }: {
-	placeholders: string[];
 	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 	onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 	value: string;
@@ -40,7 +47,7 @@ export function PlaceholdersAndVanishInput({
 		intervalRef.current = setInterval(() => {
 			setCurrentPlaceholder((prev) => (prev + 1) % placeholders.length);
 		}, 3000);
-	}, [placeholders]);
+	}, []);
 
 	const handleVisibilityChange = useCallback(() => {
 		if (document.visibilityState !== "visible" && intervalRef.current) {
@@ -73,7 +80,7 @@ export function PlaceholdersAndVanishInput({
 	return (
 		<form
 			className={cn(
-				"relative h-12 w-full overflow-hidden border bg-background shadow-md transition duration-200",
+				"relative h-12 w-full overflow-hidden rounded-full border bg-background shadow-md transition duration-200",
 				value && "bg-white dark:bg-zinc-800/50",
 				isOpen ? "rounded-lg" : "rounded-[30px]",
 				className,
@@ -104,7 +111,7 @@ export function PlaceholdersAndVanishInput({
 
 			{/* Keyboard shortcut indicator */}
 			{!value && !disabled && (
-				<kbd className="-translate-y-1/2 absolute top-1/2 right-4 inline-flex h-5 transform select-none items-center gap-1 rounded-full border bg-muted px-1.5 font-medium font-mono text-[10px] text-muted-foreground opacity-100">
+				<kbd className="-translate-y-1/2 absolute top-1/2 right-4 inline-flex h-5 transform select-none items-center gap-1 rounded-full border bg-muted px-1.5 px-2 font-medium font-mono text-[10px] text-muted-foreground opacity-100">
 					<span className="pt-[0.5px] text-xs">⌘</span>K
 				</kbd>
 			)}

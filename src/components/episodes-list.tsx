@@ -146,8 +146,15 @@ export function EpisodesList({
 						);
 					})}
 
-					<div className="mt-48 flex justify-center">
+					<div className="mt-16 hidden justify-center md:flex">
 						<EpisodesPagination totalPages={Math.ceil(count / perPage)} />
+					</div>
+
+					<div className="mt-16 flex justify-center md:hidden">
+						<EpisodesPagination
+							totalPages={Math.ceil(count / perPage)}
+							paginationItemsToDisplay={2}
+						/>
 					</div>
 				</>
 			)}

@@ -14,7 +14,7 @@ import {
 	VolumeXIcon,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAudioPlayer } from "~/contexts/audio-player-context";
 import { formatTime } from "~/utils/functions";
 import { Button } from "./ui/button";
@@ -44,6 +44,7 @@ export function AudioPlayer() {
 		currentTranscriptIsLoading,
 		playbackRate,
 		changePlaybackRate,
+		requestTranscript,
 	} = useAudioPlayer();
 
 	const [isExpanded, setIsExpanded] = useState(false);
@@ -102,6 +103,12 @@ export function AudioPlayer() {
 			setIsMuted(newMuteState);
 		}
 	}, [isMuted, audioRef.current]);
+
+	useEffect(() => {
+		if (currentEpisode) {
+			setIsExpanded(false);
+		}
+	}, [currentEpisode]);
 
 	if (!currentEpisode) {
 		return null;
@@ -243,6 +250,10 @@ export function AudioPlayer() {
 							type="button"
 							onClick={() => {
 								setIsExpanded((prev) => !prev);
+
+								if (!currentTranscript || currentTranscript?.length === 0) {
+									requestTranscript();
+								}
 							}}
 							title={isExpanded ? "Hide transcript" : "Show transcript"}
 							disabled={currentTranscriptIsLoading}

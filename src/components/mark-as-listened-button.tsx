@@ -1,5 +1,6 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
 import type { VariantProps } from "class-variance-authority";
 import { CheckCheckIcon, CheckCircleIcon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -20,6 +21,16 @@ export function MarkAsListenedButton({
 	size?: VariantProps<typeof buttonVariants>["size"];
 	variant?: VariantProps<typeof buttonVariants>["variant"];
 }) {
+	const { user } = useUser();
+
+	const {
+		data: listeningHistory,
+		refetch,
+		isLoading: isLoadingListeningHistory,
+	} = api.queue.getListeningHistory.useQuery(void 0, {
+		enabled: !!user,
+	});
+
 	const {
 		mutateAsync: markAsListenedMutation,
 		isPending: isMarkingAsListened,
@@ -37,14 +48,12 @@ export function MarkAsListenedButton({
 		},
 	});
 
-	const {
-		data: listeningHistory,
-		refetch,
-		isLoading: isLoadingListeningHistory,
-	} = api.queue.getListeningHistory.useQuery();
-
 	const isLoading =
 		isMarkingAsListened || isMarkingAsUnlistened || isLoadingListeningHistory;
+
+	if (!user) {
+		return null;
+	}
 
 	return (
 		<Button

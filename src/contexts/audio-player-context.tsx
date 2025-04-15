@@ -36,6 +36,8 @@ interface AudioPlayerContextType {
 	containerScrolledRef: React.RefObject<boolean>;
 	currentTranscript: Vector<VectorDict>[] | undefined;
 	currentTranscriptIsLoading: boolean;
+	currentTranscriptRequested: boolean;
+	requestTranscript: () => void;
 }
 
 const AudioPlayerContext = createContext<AudioPlayerContextType | undefined>(
@@ -63,6 +65,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 	const [podcast, setPodcast] = useState<PodcastSeries | null>(null);
 	const [audioError, setAudioError] = useState<string | null>(null);
 	const [playbackRate, setPlaybackRate] = useState(1);
+	const currentTranscriptRequested = useRef(false);
 
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const wordsRef = useRef<HTMLDivElement | null>(null);
@@ -78,19 +81,11 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 	const { mutateAsync: markAsListened } =
 		api.queue.markAsListened.useMutation();
 
-	// const { mutateAsync: generateTranscriptAndUpsert } =
-	// 	api.transcription.generateTranscriptAndUpsert.useMutation({
-	// 		onSuccess: () => {
-	// 			console.log("transcript upserted");
-
-	// 			if (podcast?.uuid && currentEpisode?.uuid) {
-	// 				getTranscript({
-	// 					podcastId: podcast.uuid,
-	// 					episodeId: currentEpisode.uuid,
-	// 				});
-	// 			}
-	// 		},
-	// 	});
+	const {
+		mutateAsync: generateTranscript,
+		isPending,
+		data,
+	} = api.transcription.generateTranscriptAndUpsert.useMutation();
 
 	const { data: currentTranscript, isPending: transcriptIsLoading } =
 		api.transcription.getTranscript.useQuery(
@@ -103,7 +98,21 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 			},
 		);
 
-	console.log("currentTranscript", currentTranscript);
+	const requestTranscript = useCallback(() => {
+		if (
+			podcast?.uuid &&
+			currentEpisode?.uuid &&
+			!currentTranscriptRequested.current
+		) {
+			generateTranscript({
+				podcastId: podcast.uuid,
+				episodeId: currentEpisode.uuid,
+				url: currentEpisode.enclosures[0]?.url ?? "",
+			});
+
+			currentTranscriptRequested.current = true;
+		}
+	}, [podcast, currentEpisode, generateTranscript]);
 
 	const transcriptRef = useRef<Vector<VectorDict>[]>([]);
 
@@ -175,33 +184,33 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 				const currentTime = audioRef.current?.currentTime || 0;
 				setCurrentTime(currentTime);
 
-				// const nonActiveWords = wordsRef.current?.querySelectorAll(
-				// 	".group[data-active='true']",
-				// );
+				const nonActiveWords = wordsRef.current?.querySelectorAll(
+					".group[data-active='true']",
+				);
 
-				// for (const word of nonActiveWords ?? []) {
-				// 	(word as HTMLElement).dataset.active = "false";
-				// }
+				for (const word of nonActiveWords ?? []) {
+					(word as HTMLElement).dataset.active = "false";
+				}
 
-				// const activeWordIndex = transcriptRef.current.findIndex((word) => {
-				// 	return word.metadata?.start && word.metadata.start >= currentTime;
-				// });
+				const activeWordIndex = transcriptRef.current.findIndex((word) => {
+					return word.metadata?.start && word.metadata.start > currentTime;
+				});
 
-				// const wordElement = wordsRef.current?.childNodes[activeWordIndex];
-				// if (wordElement) {
-				// 	(wordElement as HTMLElement).dataset.active = "true";
-				// 	if (!containerScrolledRef.current) {
-				// 		(wordElement as HTMLElement).scrollIntoView({
-				// 			behavior: "smooth",
-				// 			block: "center",
-				// 		});
-				// 	}
-				// }
+				const wordElement = wordsRef.current?.childNodes[activeWordIndex];
+				if (wordElement) {
+					(wordElement as HTMLElement).dataset.active = "true";
+					if (!containerScrolledRef.current) {
+						(wordElement as HTMLElement).scrollIntoView({
+							behavior: "smooth",
+							block: "center",
+						});
+					}
+				}
 
-				// const prevElement = wordsRef.current?.childNodes[activeWordIndex - 1];
-				// if (prevElement) {
-				// 	(prevElement as HTMLElement).dataset.active = "true";
-				// }
+				const prevElement = wordsRef.current?.childNodes[activeWordIndex - 1];
+				if (prevElement) {
+					(prevElement as HTMLElement).dataset.active = "true";
+				}
 
 				// const nextElement = wordsRef.current?.childNodes[activeWordIndex + 1];
 				// if (nextElement) {
@@ -361,8 +370,13 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 		audioRef,
 		wordsRef,
 		containerScrolledRef,
-		currentTranscript,
-		currentTranscriptIsLoading: transcriptIsLoading,
+		currentTranscript:
+			currentTranscript && currentTranscript.length > 0
+				? currentTranscript
+				: data,
+		currentTranscriptIsLoading: transcriptIsLoading || isPending,
+		currentTranscriptRequested: currentTranscriptRequested.current,
+		requestTranscript,
 		playbackRate,
 		changePlaybackRate,
 	};

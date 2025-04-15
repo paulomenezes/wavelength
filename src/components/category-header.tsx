@@ -43,7 +43,7 @@ export function CategoryHeader() {
 
 	return (
 		<div className="sticky top-[65px] z-40 border-gray-200 border-b bg-gray-50 px-4 py-4">
-			<div className="hide-scrollbar container mx-auto flex overflow-x-auto px-4">
+			<div className="hide-scrollbar mx-auto flex max-w-[96rem] overflow-x-auto px-4">
 				<div className="flex items-center gap-6 font-medium text-lg">
 					<button
 						type="button"
