@@ -101,19 +101,21 @@ export function EpisodeCard({
 						Show more
 					</Link>
 
-					<MarkAsListenedButton
-						episode={episode}
-						podcast={podcast}
-						variant="link"
-						size="default"
-					/>
+					<div className="hidden items-center gap-2 sm:flex">
+						<MarkAsListenedButton
+							episode={episode}
+							podcast={podcast}
+							variant="link"
+							size="default"
+						/>
 
-					<AddToQueueButton
-						episode={episode}
-						podcast={podcast}
-						variant="link"
-						size="default"
-					/>
+						<AddToQueueButton
+							episode={episode}
+							podcast={podcast}
+							variant="link"
+							size="default"
+						/>
+					</div>
 				</div>
 			</DisplayCardFooter>
 		</DisplayCard>

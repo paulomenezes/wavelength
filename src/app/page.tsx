@@ -20,6 +20,8 @@ import {
 	DisplayCardFooter,
 	DisplayCardHeader,
 } from "~/components/ui/display-card";
+import { Skeleton } from "~/components/ui/skeleton";
+import { cn } from "~/lib/utils";
 import { api } from "~/trpc/server";
 import { formatTime, getDateDistance } from "~/utils/functions";
 
@@ -53,7 +55,16 @@ export async function HomePageContent() {
 				</p>
 			</div>
 
-			<Suspense>
+			<Suspense
+				fallback={
+					<div className="grid grid-cols-1 gap-8">
+						{Array.from({ length: 10 }).map((_, index) => (
+							// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+							<Skeleton key={index} className="h-[236px] w-full" />
+						))}
+					</div>
+				}
+			>
 				<SubscriptionsContent />
 			</Suspense>
 		</main>
@@ -105,10 +116,13 @@ async function SubscriptionsContent() {
 								{sub.group_key && (
 									<Link
 										href={`/podcast/${sub.podcast.uuid}?group=${sub.group_key}`}
-										className={buttonVariants({
-											variant: "link",
-											size: "sm",
-										})}
+										className={cn(
+											buttonVariants({
+												variant: "link",
+												size: "sm",
+											}),
+											"hidden md:flex",
+										)}
 									>
 										<TagIcon className="h-4 w-4" />
 										{sub.group_key.startsWith("@")

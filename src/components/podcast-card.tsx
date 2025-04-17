@@ -1,7 +1,7 @@
-// import type { Palette } from "@vibrant/color";
 import Image from "next/image";
 import Link from "next/link";
 import type { PodcastSeries } from "~/graphql/generated";
+import { ImageWithFallback } from "./image-fallback";
 import { Skeleton } from "./ui/skeleton";
 
 interface PodcastCardProps {
@@ -9,15 +9,9 @@ interface PodcastCardProps {
 }
 
 export async function PodcastCard({ podcast }: PodcastCardProps) {
-	// let vibrant: Palette | null = null;
-
-	// try {
-	// 	if (podcast.imageUrl) {
-	// 		vibrant = await new Vibrant(podcast.imageUrl).getPalette();
-	// 	}
-	// } catch (error) {
-	// 	console.error(error);
-	// }
+	if (!podcast.name) {
+		return null;
+	}
 
 	return (
 		<Link href={`/podcast/${podcast.uuid}`} className="group">
@@ -30,16 +24,7 @@ export async function PodcastCard({ podcast }: PodcastCardProps) {
 						height={200}
 						className="h-full w-full scale-200"
 					/>
-					<div
-						className="absolute inset-0 bg-black/50 backdrop-blur-lg"
-						// style={
-						// 	vibrant?.DarkVibrant
-						// 		? {
-						// 				backgroundColor: `rgba(${vibrant?.DarkVibrant?.rgb[0]}, ${vibrant?.DarkVibrant?.rgb[1]}, ${vibrant?.DarkVibrant?.rgb[2]}, 0.8)`,
-						// 			}
-						// 		: undefined
-						// }
-					/>
+					<div className="absolute inset-0 bg-black/50 backdrop-blur-lg" />
 				</div>
 
 				<div className="relative space-y-3">
@@ -57,7 +42,7 @@ export async function PodcastCard({ podcast }: PodcastCardProps) {
 						)}
 					</div>
 					<div className="overflow-hidden rounded-sm">
-						<Image
+						<ImageWithFallback
 							src={podcast.imageUrl || "/placeholder.svg"}
 							alt={podcast.name || ""}
 							width={200}

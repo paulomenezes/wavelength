@@ -6,7 +6,7 @@ import type { RSSTranscript } from "~/types/rss-transcript";
 import { encodeToBase64 } from "~/utils/string-utils";
 
 export async function parseXMLFromURL(url: string) {
-	"use cache";
+	// "use cache";
 
 	if (!/(^http(s?):\/\/[^\s$.?#].[^\s]*)/i.test(url)) {
 		return null;
@@ -19,7 +19,7 @@ export async function parseXMLFromURL(url: string) {
 }
 
 export async function parseXMLFromText(data: string) {
-	"use cache";
+	// "use cache";
 
 	const xml = new XMLParser({
 		attributeNamePrefix: "",

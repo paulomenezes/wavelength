@@ -29,48 +29,46 @@ export function PlayButton({
 		!isPlaying && currentEpisode?.uuid === episode.uuid;
 
 	return (
-		<div className="flex flex-col gap-2">
-			<Button
-				type="button"
-				size="lg"
-				onClick={() => {
-					if (isCurrentEpisodePlaying) {
-						togglePlayPause();
-					} else {
-						playEpisode(episode, podcast);
-						playEpisodeMutation({ episodeUuid: episode.uuid });
-					}
-				}}
-				variant={variant}
-				disabled={isPending}
-			>
-				{isPending ? (
-					<Loader2 className="size-5 animate-spin" />
-				) : (
-					<>
-						{isCurrentEpisodePlaying ? (
-							<PauseIcon
-								className={cn(
-									"size-5",
-									variant === "default" ? "fill-white" : "fill-primary",
-								)}
-							/>
-						) : (
-							<Play
-								className={cn(
-									"size-5",
-									variant === "default" ? "fill-white" : "fill-primary",
-								)}
-							/>
-						)}
-					</>
-				)}
-				{isCurrentEpisodePlaying
-					? "Stop"
-					: isCurrentEpisodePaused
-						? "Continue"
-						: "Play episode"}
-			</Button>
-		</div>
+		<Button
+			type="button"
+			size="lg"
+			onClick={() => {
+				if (isCurrentEpisodePlaying) {
+					togglePlayPause();
+				} else {
+					playEpisode(episode, podcast);
+					playEpisodeMutation({ episodeUuid: episode.uuid });
+				}
+			}}
+			variant={variant}
+			disabled={isPending}
+		>
+			{isPending ? (
+				<Loader2 className="size-5 animate-spin" />
+			) : (
+				<>
+					{isCurrentEpisodePlaying ? (
+						<PauseIcon
+							className={cn(
+								"size-5",
+								variant === "default" ? "fill-white" : "fill-primary",
+							)}
+						/>
+					) : (
+						<Play
+							className={cn(
+								"size-5",
+								variant === "default" ? "fill-white" : "fill-primary",
+							)}
+						/>
+					)}
+				</>
+			)}
+			{isCurrentEpisodePlaying
+				? "Stop"
+				: isCurrentEpisodePaused
+					? "Continue"
+					: "Play episode"}
+		</Button>
 	);
 }

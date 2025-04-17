@@ -72,7 +72,7 @@ export function EpisodesList({
 
 	return (
 		<>
-			<div className="mb-6 flex items-center justify-between">
+			<div className="mb-6 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
 				<div className="flex items-center gap-2 font-semibold text-xl">
 					Episodes{" "}
 					{isLoading ? (
@@ -85,7 +85,7 @@ export function EpisodesList({
 				</div>
 
 				<SearchInput
-					classNameContainer="w-full max-w-3xs lg:max-w-md"
+					classNameContainer="w-full sm:max-w-3xs lg:max-w-md"
 					placeholder="Search episodes"
 					value={search}
 					onChange={(e) => setPodcastSearch({ search: e.target.value })}

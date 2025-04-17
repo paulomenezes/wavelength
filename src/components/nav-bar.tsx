@@ -10,10 +10,10 @@ import {
 } from "@clerk/nextjs";
 import {
 	AudioWaveformIcon,
-	Library,
 	ListIcon,
 	LogInIcon,
 	LogOutIcon,
+	MenuIcon,
 	PlayIcon,
 	PodcastIcon,
 	SearchIcon,
@@ -24,6 +24,12 @@ import { api } from "~/trpc/react";
 import { PodcastChat } from "./chat";
 import { NavBarChatTrigger } from "./chat-trigger";
 import { Button, buttonVariants } from "./ui/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 export function NavBar() {
 	const { user } = useUser();
@@ -33,13 +39,69 @@ export function NavBar() {
 		<header className="sticky top-0 z-40 border-gray-200 border-b bg-white shadow-sm">
 			<div className="mx-auto flex h-16 max-w-[96rem] items-center justify-between px-4">
 				<div className="flex items-center gap-8">
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="outline" size="icon" className="md:hidden">
+								<MenuIcon className="size-4" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent side="bottom" align="start">
+							<DropdownMenuItem asChild>
+								<Link
+									href="/"
+									className={
+										pathname === "/" ? "bg-primary/10 text-primary" : ""
+									}
+								>
+									<PodcastIcon className="size-4" />
+									Library
+								</Link>
+							</DropdownMenuItem>
+							<DropdownMenuItem asChild>
+								<Link
+									href="/discover"
+									className={
+										pathname === "/discover" ? "bg-primary/10 text-primary" : ""
+									}
+								>
+									<SearchIcon className="size-4" />
+									Discover
+								</Link>
+							</DropdownMenuItem>
+							<DropdownMenuItem asChild>
+								<Link
+									href="/categories"
+									className={
+										pathname === "/categories"
+											? "bg-primary/10 text-primary"
+											: ""
+									}
+								>
+									<ListIcon className="size-4" />
+									Categories
+								</Link>
+							</DropdownMenuItem>
+							<DropdownMenuItem asChild>
+								<Link
+									href="/up-next"
+									className={
+										pathname === "/up-next" ? "bg-primary/10 text-primary" : ""
+									}
+								>
+									<PlayIcon className="size-4" />
+									Up Next
+								</Link>
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+
 					<Link href="/" className="flex items-center gap-2">
 						<AudioWaveformIcon className="size-6 text-primary" />
 						<span className="font-bold text-xl">Wavelength</span>
 					</Link>
 
 					<nav className="hidden md:block">
-						<div className="flex items-center gap-6">
+						<div className="flex items-center gap-4">
 							{user?.id && (
 								<Link
 									href="/"
@@ -78,12 +140,6 @@ export function NavBar() {
 								<PlayIcon className="size-4" />
 								Up Next
 							</Link>
-							{/* <Link
-								href="/activity"
-								className={buttonVariants({ variant: "outline" })}
-							>
-								Activity
-							</Link> */}
 						</div>
 					</nav>
 				</div>
@@ -120,7 +176,6 @@ export function NavBar() {
 
 function ChatHistory() {
 	const chatHistory = api.chat.getChatHistory.useQuery(void 0, {
-		refetchInterval: 1000,
 		staleTime: 0,
 	});
 

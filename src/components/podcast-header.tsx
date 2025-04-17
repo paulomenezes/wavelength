@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import { useEffect } from "react";
 import { api } from "~/trpc/react";
 import type { PodcastColors } from "~/types/podcast-colors";

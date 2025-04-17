@@ -51,7 +51,7 @@ export function TranscriptView({
 		<div>
 			<h2 className="mb-3 font-semibold text-xl">Transcript</h2>
 
-			{transcript.length > 0 ? (
+			{filteredTranscript.length > 0 ? (
 				<>
 					<SearchInput
 						placeholder="Search transcript"

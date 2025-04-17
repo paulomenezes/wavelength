@@ -5,10 +5,10 @@ import type { SearchParams } from "nuqs";
 import { Suspense } from "react";
 import { EpisodesGroups } from "~/components/episodes-groups";
 import { EpisodesList } from "~/components/episodes-list";
+import { ImageWithFallback } from "~/components/image-fallback";
 import { PodcastHeader } from "~/components/podcast-header";
 import { RefreshPodcastButton } from "~/components/refresh-podcast-button";
 import { SubscribeButton } from "~/components/subscribe-button";
-import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { loadPodcastSearchParams } from "~/lib/podcast-search";
 import { getTrendingPodcasts } from "~/services/podcast";
@@ -86,7 +86,7 @@ async function PodcastPageContent({
 
 				<div className="flex flex-col gap-6 md:flex-row">
 					<div className="shrink-0">
-						<Image
+						<ImageWithFallback
 							src={podcast.imageUrl || "/placeholder.svg"}
 							alt={podcast.name || ""}
 							width={300}
@@ -97,8 +97,8 @@ async function PodcastPageContent({
 
 					<div className="flex w-full flex-col justify-between md:h-72">
 						<div>
-							<div className="flex items-center justify-between gap-2">
-								<h1 className="mb-2 font-bold text-3xl">{podcast.name}</h1>
+							<div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-center sm:gap-2">
+								<h1 className="font-bold text-3xl">{podcast.name}</h1>
 
 								<div className="flex items-center gap-2">
 									{podcast.rssUrl && podcast.uuid && (
@@ -112,62 +112,17 @@ async function PodcastPageContent({
 									)}
 								</div>
 							</div>
-							<p className="mb-1">{podcast.totalEpisodesCount} episodes</p>
+							<p className="mt-4 mb-1">{podcast.totalEpisodesCount} episodes</p>
 							{podcast.authorName && (
 								<p className="mb-4">By {podcast.authorName}</p>
 							)}
 							<div
-								className="mb-6 line-clamp-2 max-w-2xl md:line-clamp-4"
+								className="line-clamp-2 max-w-2xl md:line-clamp-6"
 								dangerouslySetInnerHTML={{
 									__html: podcast.description ?? "",
 								}}
 							/>
 						</div>
-
-						<div className="flex flex-wrap gap-3">
-							<Button type="button" variant="secondary" size="lg">
-								<Play className="h-4 w-4 fill-primary stroke-primary" />
-								Latest Episode
-							</Button>
-							<Button type="button" variant="outline" size="lg">
-								<Download className="h-4 w-4" />
-								Download
-							</Button>
-							<Button type="button" variant="outline" size="lg">
-								<Share2 className="h-4 w-4" />
-								Share
-							</Button>
-						</div>
-
-						{/* Hosts Section */}
-						{/* {podcast.hosts && podcast.hosts.length > 0 && (
-								<div>
-									<h2 className="text-xl font-semibold mb-3">Hosts</h2>
-									<div className="flex flex-wrap gap-4">
-										{podcast.hosts.map((host) => (
-											<div key={host.id} className="flex items-center gap-3">
-												<Image
-													src={
-														host.image || "/placeholder.svg?height=50&width=50"
-													}
-													alt={host.name}
-													width={50}
-													height={50}
-													className="rounded-full object-cover"
-												/>
-												<div>
-													<h3 className="font-medium">{host.name}</h3>
-													{host.bio && (
-														<p className="text-sm text-gray-300 max-w-md line-clamp-2">
-															{host.bio}
-														</p>
-													)}
-												</div>
-											</div>
-										))}
-									</div>
-								</div>
-							)} */}
 					</div>
 				</div>
 			</PodcastHeader>
@@ -177,71 +132,43 @@ async function PodcastPageContent({
 
 function PodcastPageContentLoading() {
 	return (
-		<PodcastHeader>
-			<div className="flex w-full flex-col gap-6 md:flex-row">
+		<PodcastHeader
+			colors={{
+				darkMuted: "#fff",
+				darkVibrant: "#000",
+				vibrant: "#000",
+				lightVibrant: "#000",
+				muted: "#000",
+				lightMuted: "#000",
+			}}
+		>
+			<Link
+				href="/"
+				className="mb-6 inline-flex items-center gap-2 text-gray-500"
+			>
+				<ArrowLeft className="h-4 w-4" />
+				Back to podcasts
+			</Link>
+
+			<div className="flex flex-col gap-6 md:flex-row">
 				<div className="shrink-0">
-					<Skeleton className="aspect-square w-[300px] rounded-md" />
+					<Skeleton className="aspect-square size-40 rounded-md object-cover md:size-72" />
 				</div>
 
-				<div className="w-full">
-					<Skeleton className="mb-2 h-9 w-96" />
-					<Skeleton className="mb-1 h-6 w-20" />
-					<Skeleton className="mb-4 h-6 w-32" />
-					<Skeleton className="mb-6 h-[120px] w-full max-w-2xl" />
+				<div className="flex w-full flex-col justify-between md:h-72">
+					<div>
+						<div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-center sm:gap-2">
+							<Skeleton className="h-9 w-44 lg:w-96" />
 
-					<div className="mb-6 flex flex-wrap gap-3">
-						<button
-							type="button"
-							className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2 font-medium text-gray-900 opacity-60 hover:bg-gray-100"
-						>
-							<Play className="h-4 w-4" />
-							Play All
-						</button>
-						<button
-							type="button"
-							className="inline-flex items-center gap-2 rounded-full bg-gray-700 px-6 py-2 font-medium text-white opacity-60 hover:bg-gray-600"
-						>
-							<Download className="h-4 w-4" />
-							Download
-						</button>
-						<button
-							type="button"
-							className="inline-flex items-center gap-2 rounded-full bg-gray-700 px-6 py-2 font-medium text-white opacity-60 hover:bg-gray-600"
-						>
-							<Share2 className="h-4 w-4" />
-							Share
-						</button>
+							<div className="flex items-center gap-2">
+								<Skeleton className="h-10 w-12 rounded-full" />
+								<Skeleton className="h-10 w-[131px] rounded-full" />
+							</div>
+						</div>
+						<Skeleton className="mt-4 mb-1 h-6 w-20" />
+						<Skeleton className="mb-4 h-6 w-32" />
+						<Skeleton className="mb-6 h-[144px] w-full max-w-2xl" />
 					</div>
-
-					{/* Hosts Section */}
-					{/* {podcast.hosts && podcast.hosts.length > 0 && (
-								<div>
-									<h2 className="text-xl font-semibold mb-3">Hosts</h2>
-									<div className="flex flex-wrap gap-4">
-										{podcast.hosts.map((host) => (
-											<div key={host.id} className="flex items-center gap-3">
-												<Image
-													src={
-														host.image || "/placeholder.svg?height=50&width=50"
-													}
-													alt={host.name}
-													width={50}
-													height={50}
-													className="rounded-full object-cover"
-												/>
-												<div>
-													<h3 className="font-medium">{host.name}</h3>
-													{host.bio && (
-														<p className="text-sm text-gray-300 max-w-md line-clamp-2">
-															{host.bio}
-														</p>
-													)}
-												</div>
-											</div>
-										))}
-									</div>
-								</div>
-							)} */}
 				</div>
 			</div>
 		</PodcastHeader>

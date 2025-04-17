@@ -96,6 +96,8 @@ export function PodcastChat({
 		},
 	});
 
+	const hasUserMessages = messages.some((message) => message.role === "user");
+
 	useEffect(() => {
 		const newMessages = [
 			...(podcast
@@ -107,7 +109,7 @@ export function PodcastChat({
 The user is currently on the page of the podcast: ${podcast?.name}, so maybe you can help them find episodes of this podcast or answer questions about it.
 
 Here is some information about the podcast: ${podcast?.name} and description: ${podcast?.description}.
-Here is the title of the latest 10 episodes: ${podcast?.episodes?.map((episode) => episode?.name).join(", ")}`,
+Here is the title of the latest 10 episodes: ${podcast?.episodes?.map((episode) => `${episode?.name} - ${episode?.description}`).join(", ")}`,
 						},
 					] as const)
 				: []),
@@ -296,7 +298,7 @@ Here is the transcript of the episode: ${transcript?.map((t) => t.data).join("\n
 	}, []);
 
 	return (
-		<div>
+		<div className="max-w-screen overflow-hidden">
 			<div className={cn("flex items-center")}>
 				<Dialog open={isOpen} onOpenChange={setIsOpen}>
 					{children}
@@ -305,8 +307,11 @@ Here is the transcript of the episode: ${transcript?.map((t) => t.data).join("\n
 							<DialogTitle>Podcast Chat</DialogTitle>
 						</DialogHeader>
 
-						<div className="mt-8 flex-1 space-y-3 overflow-y-auto p-4">
-							{messages.length === 0 ? (
+						<div
+							className="mt-8 flex-1 space-y-3 overflow-y-auto p-4"
+							ref={chatContainerRef}
+						>
+							{!hasUserMessages ? (
 								<div className="flex h-full flex-col items-center justify-center text-center text-gray-500">
 									<Search className="mb-3 h-10 w-10 opacity-50" />
 									<p className="font-medium text-base">

@@ -1,7 +1,8 @@
 import "~/styles/globals.css";
 
 import { ClerkProvider } from "@clerk/nextjs";
-import type { Metadata } from "next";
+import { Loader2 } from "lucide-react";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Suspense } from "react";
@@ -10,6 +11,14 @@ import { NavBar } from "~/components/nav-bar";
 import { Toaster } from "~/components/ui/sonner";
 import { AudioPlayerProvider } from "~/contexts/audio-player-context";
 import { TRPCReactProvider } from "~/trpc/react";
+
+export const viewport: Viewport = {
+	width: "device-width",
+	initialScale: 1,
+	maximumScale: 1,
+	userScalable: false,
+	viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
 	title: "Wavelength",
@@ -28,7 +37,13 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<Suspense fallback={<div>Loading...</div>}>
+		<Suspense
+			fallback={
+				<div className="flex h-full w-full items-center justify-center">
+					<Loader2 className="size-4 animate-spin" />
+				</div>
+			}
+		>
 			<ClerkProvider dynamic>
 				<html lang="en">
 					<body className={`${geist.variable} antialiased`}>

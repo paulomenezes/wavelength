@@ -36,8 +36,8 @@ export async function getTranscript(
 	podcastId: string,
 	episodeId: string,
 ): Promise<Vector<VectorDict>[]> {
-	"use cache";
-	cacheTag(`podcast-${podcastId}-${episodeId}-transcript`);
+	// "use cache";
+	// cacheTag(`podcast-${podcastId}-${episodeId}-transcript`);
 
 	const allData: Vector<VectorDict>[] = [];
 

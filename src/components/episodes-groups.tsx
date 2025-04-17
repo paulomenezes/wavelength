@@ -13,9 +13,9 @@ import type { PodcastSeries } from "~/graphql/generated";
 import { useIsMobile } from "~/hooks/use-mobile";
 import { usePodcastSearch } from "~/hooks/use-podcast-search";
 import { api } from "~/trpc/react";
-import type { GroupedEpisodes } from "~/types/group-episodes";
 import { CategoryFilterCard } from "./episode-group";
 import { Button } from "./ui/button";
+import { Skeleton } from "./ui/skeleton";
 
 export function EpisodesGroups({
 	podcast,
@@ -25,18 +25,15 @@ export function EpisodesGroups({
 	const isMobile = useIsMobile();
 	const [{ group }, setPodcastSearch] = usePodcastSearch();
 
-	const { data: groupedEpisodes } = api.podcast.getPodcastGroups.useQuery(
-		{
-			podcastId: podcast.uuid ?? "",
-		},
-		{
-			enabled: !!podcast.uuid,
-		},
-	);
-
-	if (!groupedEpisodes || groupedEpisodes?.length === 0) {
-		return null;
-	}
+	const { data: groupedEpisodes, isLoading } =
+		api.podcast.getPodcastGroups.useQuery(
+			{
+				podcastId: podcast.uuid ?? "",
+			},
+			{
+				enabled: !!podcast.uuid,
+			},
+		);
 
 	return (
 		<>
@@ -65,7 +62,18 @@ export function EpisodesGroups({
 					className="w-full"
 				>
 					<CarouselContent className="-ml-2 md:-ml-4">
-						{groupedEpisodes.map((group) => (
+						{isLoading &&
+							Array.from({ length: 4 }).map((_, index) => (
+								<CarouselItem
+									// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+									key={index}
+									className="basis-full pl-2 sm:basis-1/2 md:basis-1/3 md:pl-4 lg:basis-1/4"
+								>
+									<Skeleton className="h-[168px] w-full" />
+								</CarouselItem>
+							))}
+
+						{groupedEpisodes?.map((group) => (
 							<CarouselItem
 								key={group.key}
 								className="basis-full pl-2 sm:basis-1/2 md:basis-1/3 md:pl-4 lg:basis-1/4"
