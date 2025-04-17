@@ -12,7 +12,7 @@ import { api } from "~/trpc/server";
 import { genreConfig } from "~/utils/categories";
 import { HOMEPAGE_GENRES } from "~/utils/consts";
 
-export default async function DiscoverPage() {
+export default function DiscoverPage() {
 	return (
 		<>
 			<CategoryHeader />

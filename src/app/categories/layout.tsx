@@ -1,28 +1,6 @@
 import type { ReactNode } from "react";
 import { CategoryCard } from "~/components/category-card";
-import { Genre } from "~/graphql/generated";
-
-const genres: Genre[] = [
-	Genre.PodcastseriesArts,
-	Genre.PodcastseriesBusiness,
-	Genre.PodcastseriesComedy,
-	Genre.PodcastseriesEducation,
-	Genre.PodcastseriesFiction,
-	Genre.PodcastseriesGovernment,
-	Genre.PodcastseriesHistory,
-	Genre.PodcastseriesHealthAndFitness,
-	Genre.PodcastseriesKidsAndFamily,
-	Genre.PodcastseriesLeisure,
-	Genre.PodcastseriesMusic,
-	Genre.PodcastseriesNews,
-	Genre.PodcastseriesReligionAndSpirituality,
-	Genre.PodcastseriesScience,
-	Genre.PodcastseriesSocietyAndCulture,
-	Genre.PodcastseriesSports,
-	Genre.PodcastseriesTechnology,
-	Genre.PodcastseriesTrueCrime,
-	Genre.PodcastseriesTvAndFilm,
-];
+import { ALL_GENRES } from "~/utils/consts";
 
 export default function CategoriesLayout({
 	children,
@@ -40,7 +18,7 @@ export default function CategoriesLayout({
 				</div>
 
 				<div className="mt-10 grid grid-cols-3 gap-3 md:grid-cols-4 lg:grid-cols-6">
-					{genres.map((category) => (
+					{ALL_GENRES.map((category) => (
 						<CategoryCard key={category} genre={category} />
 					))}
 				</div>

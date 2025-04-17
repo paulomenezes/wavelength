@@ -11,6 +11,7 @@ import { SubscribeButton } from "~/components/subscribe-button";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { loadPodcastSearchParams } from "~/lib/podcast-search";
+import { getTrendingPodcasts } from "~/services/podcast";
 import { HydrateClient, api } from "~/trpc/server";
 
 const colors = [
@@ -22,9 +23,15 @@ const colors = [
 	"#32127a",
 ];
 
-//
+export async function generateStaticParams() {
+	const podcasts = await getTrendingPodcasts();
 
-export default async function PodcastPage({
+	return podcasts.map((podcast) => ({
+		id: podcast.uuid,
+	}));
+}
+
+export default function PodcastPage({
 	params,
 	searchParams,
 }: {

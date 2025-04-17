@@ -3,6 +3,13 @@ import { PodcastCard, PodcastCardLoading } from "~/components/podcast-card";
 import type { Genre } from "~/graphql/generated";
 import { api } from "~/trpc/server";
 import { genreConfig } from "~/utils/categories";
+import { ALL_GENRES } from "~/utils/consts";
+
+export function generateStaticParams() {
+	return ALL_GENRES.map((genre) => ({
+		id: genre,
+	}));
+}
 
 export default async function CategoryPage({
 	params,
