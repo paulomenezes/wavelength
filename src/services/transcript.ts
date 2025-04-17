@@ -1,41 +1,43 @@
+import { elevenlabs } from "@ai-sdk/elevenlabs";
 import type { Vector } from "@upstash/vector";
-import { ElevenLabsClient } from "elevenlabs";
+import { experimental_transcribe as transcribe } from "ai";
 import { revalidateTag } from "next/cache";
 import { cacheTag } from "next/dist/server/use-cache/cache-tag";
 import { v4 as uuidv4 } from "uuid";
-import { env } from "~/env";
 import { vectorClient } from "~/lib/client-vector";
 import type { VectorDict } from "~/types/vector-dict";
 import { convertToSentences } from "~/utils/functions";
 
 export async function generateTranscript(url: string) {
-	const client = new ElevenLabsClient({
-		apiKey: env.ELEVENLABS_API_KEY,
-	});
+	try {
+		const model = elevenlabs.transcription("scribe_v1");
+		console.log("## MODEL", url);
 
-	const request = await fetch(url);
-	const response = await request.arrayBuffer();
+		const result = await transcribe({
+			model,
+			audio: new URL(url),
+			providerOptions: { groq: { language: "en" } },
+		});
 
-	const blob = new Blob([response], { type: "audio/mpeg" });
+		console.log("## TRANSCRIPT GENERATED", result);
 
-	const result = await client.speechToText.convert({
-		file: blob,
-		model_id: "scribe_v1",
-		tag_audio_events: false,
-	});
+		const sentences = convertToSentences(result.segments);
+		console.log("## TRANSCRIPT GENERATED", sentences.length);
 
-	const sentences = convertToSentences(result.words);
-	console.log("## TRANSCRIPT GENERATED", sentences.length);
+		return sentences;
+	} catch (error) {
+		console.error("## TRANSCRIPT GENERATION ERROR", error);
+	}
 
-	return sentences;
+	return [];
 }
 
 export async function getTranscript(
 	podcastId: string,
 	episodeId: string,
 ): Promise<Vector<VectorDict>[]> {
-	// "use cache";
-	// cacheTag(`podcast-${podcastId}-${episodeId}-transcript`);
+	"use cache";
+	cacheTag(`podcast-${podcastId}-${episodeId}-transcript`);
 
 	const allData: Vector<VectorDict>[] = [];
 
@@ -96,6 +98,11 @@ export async function generateTranscriptAndUpsert(
 	url: string,
 ): Promise<Vector<VectorDict>[]> {
 	const sentences = await generateTranscript(url);
+
+	if (sentences.length === 0) {
+		return [];
+	}
+
 	const batchSize = 1000;
 
 	for (let i = 0; i < sentences.length; i += batchSize) {

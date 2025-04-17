@@ -17,7 +17,7 @@ export async function getEpisodesByPodcastId(
 	search?: string,
 	group?: string,
 ) {
-	// "use cache";
+	"use cache";
 
 	const conditions = [Prisma.sql`podcast_uuid = ${podcastId}`];
 
@@ -84,6 +84,70 @@ export async function getEpisodesByPodcastId(
 			enclosures: episode.enclosures ?? [],
 		})),
 		count: Number(count.at(0)?.count ?? 0),
+	};
+}
+
+export async function getEpisodeByPodcastId(
+	podcastId: string,
+	group?: string | null,
+) {
+	"use cache";
+
+	const conditions = [Prisma.sql`podcast_uuid = ${podcastId}`];
+
+	if (group) {
+		if (group.startsWith("@w-")) {
+			const dayOfWeek = format(parse(group.slice(3), "EEEE", new Date()), "e");
+
+			conditions.push(Prisma.sql`day_of_week = ${dayOfWeek}::int`);
+		} else if (group.startsWith("@e")) {
+			const groupName = group.replace("@e", "");
+			const dayOfWeeks = groupName
+				.slice(0, groupName.indexOf("-"))
+				.split("")
+				.map((day) => Number(day));
+
+			conditions.push(
+				Prisma.sql`day_of_week NOT IN (${Prisma.join(dayOfWeeks)})`,
+			);
+		} else {
+			conditions.push(
+				Prisma.sql`(processed_title_colon = ${group} OR processed_title_dash = ${group})`,
+			);
+		}
+	}
+
+	const whereClause = Prisma.sql`WHERE ${Prisma.join(conditions, " AND ")}`;
+
+	const data = await databaseClient.$queryRaw<ProcessedEpisode[]>(
+		Prisma.sql`
+			SELECT 
+				pe.*,
+				(
+					SELECT json_agg(json_build_object(
+						'url', pee.url,
+						'type', pee.type,
+						'length', pee.length
+					))
+					FROM podcast_episode_enclosures pee
+					WHERE pee.episode_uuid = pe.uuid AND pee.type like 'audio%'
+				) as enclosures
+			FROM processed_episodes pe
+			${whereClause}
+			ORDER BY published DESC LIMIT 1
+			`,
+	);
+
+	const episode = data?.[0];
+
+	if (!episode) {
+		return null;
+	}
+
+	return {
+		...episode,
+		day_of_week: Number(episode.day_of_week),
+		enclosures: episode.enclosures ?? [],
 	};
 }
 

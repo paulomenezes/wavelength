@@ -20,10 +20,12 @@ export function getDateDistance(date: Date | string | number) {
 	});
 }
 
-export function formatTime(seconds: number): string {
-	if (!seconds || Number.isNaN(seconds)) {
-		return "00:00";
+export function formatTime(time: number | string): string {
+	if (!time || Number.isNaN(Number(time))) {
+		return typeof time === "string" ? time : "00:00";
 	}
+
+	const seconds = Number(time);
 
 	const hours = Math.floor(seconds / 3600);
 	const minutes = Math.floor((seconds % 3600) / 60);
@@ -39,7 +41,11 @@ export function formatTime(seconds: number): string {
 }
 
 export function convertToSentences(
-	transcript: SpeechToTextWordResponseModel[],
+	transcript: Array<{
+		readonly text: string;
+		readonly startSecond: number;
+		readonly endSecond: number;
+	}>,
 ): Sentence[] {
 	const sentences: Sentence[] = [];
 	let currentSentence: string[] = [];
@@ -47,15 +53,11 @@ export function convertToSentences(
 	let sentenceEnd: number | null = null;
 
 	for (const item of transcript) {
-		if (item.type === "word") {
-			if (sentenceStart === null) {
-				sentenceStart = item.start ?? 0;
-			}
-			currentSentence.push(item.text);
-			sentenceEnd = item.end ?? 0;
-		} else if (item.type === "spacing") {
-			currentSentence.push(item.text);
+		if (sentenceStart === null) {
+			sentenceStart = item.startSecond;
 		}
+		currentSentence.push(item.text);
+		sentenceEnd = item.endSecond;
 
 		// Check if this is the end of a sentence (period, question mark, or exclamation mark)
 		if (

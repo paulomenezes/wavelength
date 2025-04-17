@@ -11,10 +11,13 @@ export default async function CategoryPage({
 }) {
 	const { id } = await params;
 
+	const Icon = genreConfig[id as Genre]?.icon;
+
 	return (
 		<>
 			<div className="mt-12 mb-8">
-				<h1 className="mb-2 font-bold text-3xl">
+				<h1 className="mb-2 flex items-center gap-2 font-bold text-3xl">
+					{Icon && <Icon className="size-8" />}
 					{genreConfig[id as Genre]?.label}
 				</h1>
 			</div>

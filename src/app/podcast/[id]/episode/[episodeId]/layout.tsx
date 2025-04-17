@@ -7,7 +7,7 @@ import { PlayButton } from "~/components/play-button";
 import { PodcastHeader } from "~/components/podcast-header";
 import { SaveButton } from "~/components/save-button";
 import { api } from "~/trpc/server";
-import { getDateDistance } from "~/utils/functions";
+import { formatTime, getDateDistance } from "~/utils/functions";
 
 export default async function EpisodeLayout({
 	children,
@@ -73,7 +73,7 @@ export default async function EpisodeLayout({
 							{episode.itunes_duration && (
 								<span className="flex items-center gap-1">
 									<Clock className="h-4 w-4" />
-									{episode.itunes_duration}
+									{formatTime(episode.itunes_duration)}
 								</span>
 							)}
 							<span>•</span>

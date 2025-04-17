@@ -85,7 +85,11 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 		mutateAsync: generateTranscript,
 		isPending,
 		data,
-	} = api.transcription.generateTranscriptAndUpsert.useMutation();
+	} = api.transcription.generateTranscriptAndUpsert.useMutation({
+		onError: (error) => {
+			toast.error("Error generating transcript");
+		},
+	});
 
 	const { data: currentTranscript, isPending: transcriptIsLoading } =
 		api.transcription.getTranscript.useQuery(

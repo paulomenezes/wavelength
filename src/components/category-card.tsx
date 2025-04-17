@@ -26,7 +26,7 @@ export function CategoryCard({
 			className={cn(
 				"flex cursor-pointer flex-col items-center justify-center rounded-lg border p-3 transition-all",
 				"hover:shadow-sm",
-				isSelected ? "shadow-md" : "bg-card",
+				isSelected ? "bg-primary text-white shadow-md" : "bg-card",
 			)}
 		>
 			<config.icon className="mb-2 h-6 w-6" />

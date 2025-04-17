@@ -109,13 +109,6 @@ export function PlaceholdersAndVanishInput({
 				)}
 			/>
 
-			{/* Keyboard shortcut indicator */}
-			{!value && !disabled && (
-				<kbd className="-translate-y-1/2 absolute top-1/2 right-4 inline-flex h-5 transform select-none items-center gap-1 rounded-full border bg-muted px-1.5 px-2 font-medium font-mono text-[10px] text-muted-foreground opacity-100">
-					<span className="pt-[0.5px] text-xs">⌘</span>K
-				</kbd>
-			)}
-
 			<div className="pointer-events-none absolute inset-0 flex items-center rounded-full">
 				<AnimatePresence mode="wait">
 					{!value && (

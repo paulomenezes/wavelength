@@ -1,7 +1,5 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { useEffect } from "react";
 import { api } from "~/trpc/react";
 import type { PodcastColors } from "~/types/podcast-colors";
@@ -34,6 +32,13 @@ export function PodcastHeader({
 				colors?.darkMuted ?? data?.darkMuted ?? "",
 			);
 		}
+
+		return () => {
+			document.documentElement.style.setProperty(
+				"--primary",
+				"oklch(0.55 0.1488 0.9)",
+			);
+		};
 	}, [colors?.darkMuted, data?.darkMuted]);
 
 	return (

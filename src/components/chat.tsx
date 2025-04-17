@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { useChat } from "@ai-sdk/react";
-import type { UIMessage } from "ai";
+import { type Message, type UIMessage, createIdGenerator } from "ai";
 import { Search } from "lucide-react";
 import { useSelectedLayoutSegments } from "next/navigation";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
@@ -16,12 +16,21 @@ import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
+// Suggested questions
+const suggestions = [
+	"What are the top podcasts about technology?",
+	"Search for a podcast about true crime",
+	"What are the best podcasts about AI?",
+];
+
 export function PodcastChat({
 	children,
 	showPrompts = false,
+	chatHistory,
 }: {
 	children: React.ReactNode;
 	showPrompts?: boolean;
+	chatHistory: Message[] | undefined;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
 	const [showSuggestions, setShowSuggestions] = useState(false);
@@ -64,13 +73,6 @@ export function PodcastChat({
 		},
 	);
 
-	// Suggested questions
-	const suggestions = [
-		"What are the top podcasts about technology?",
-		"Recommend a podcast about true crime",
-		"Find podcasts with short episodes",
-	];
-
 	const {
 		messages,
 		input,
@@ -80,6 +82,9 @@ export function PodcastChat({
 		setMessages,
 	} = useChat({
 		api: "/api/chat",
+		initialMessages: chatHistory,
+		sendExtraMessageFields: true,
+		generateId: createIdGenerator(),
 		onFinish: () => {
 			// Scroll to bottom when new message arrives
 			setTimeout(() => {
@@ -350,6 +355,47 @@ Here is the transcript of the episode: ${transcript?.map((t) => t.data).join("\n
 								type="button"
 								onClick={() => handleSuggestionClick(suggestion)}
 								className="max-w-[85%] cursor-pointer whitespace-nowrap rounded-full border bg-gray-100 px-4 py-2 text-left text-foreground text-xs shadow-md transition-colors hover:bg-gray-200"
+							>
+								{suggestion}
+							</button>
+						))}
+					</div>
+				</div>
+			)}
+		</div>
+	);
+}
+
+export function PodcastChatLoading({
+	children,
+	showPrompts = false,
+}: {
+	children: React.ReactNode;
+	showPrompts?: boolean;
+}) {
+	return (
+		<div>
+			<div className={cn("flex items-center")}>
+				<button
+					type="button"
+					className="relative mx-4 mt-12 h-12 w-full cursor-progress overflow-hidden rounded-full border bg-background px-4 shadow-md transition duration-200 lg:mx-auto lg:max-w-4xl"
+				>
+					{children}
+				</button>
+			</div>
+
+			{showPrompts && (
+				<div
+					className={cn(
+						"mx-4 mt-4 hidden max-w-4xl transform-none opacity-100 transition-all duration-300 ease-in-out md:block lg:mx-auto",
+					)}
+				>
+					<div className="mb-2 flex flex-row items-end gap-2">
+						{suggestions.map((suggestion) => (
+							<button
+								key={suggestion}
+								type="button"
+								className="max-w-[85%] cursor-progress whitespace-nowrap rounded-full border bg-gray-100 px-4 py-2 text-left text-foreground text-xs shadow-md transition-colors hover:bg-gray-200"
 							>
 								{suggestion}
 							</button>

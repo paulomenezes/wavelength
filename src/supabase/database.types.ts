@@ -247,6 +247,30 @@ export type Database = {
 					},
 				];
 			};
+			podcast_episode_summary: {
+				Row: {
+					audio_url: string | null;
+					created_at: string | null;
+					episode_uuid: string | null;
+					id: number;
+					summary: string | null;
+				};
+				Insert: {
+					audio_url?: string | null;
+					created_at?: string | null;
+					episode_uuid?: string | null;
+					id?: number;
+					summary?: string | null;
+				};
+				Update: {
+					audio_url?: string | null;
+					created_at?: string | null;
+					episode_uuid?: string | null;
+					id?: number;
+					summary?: string | null;
+				};
+				Relationships: [];
+			};
 			podcast_episode_transcripts: {
 				Row: {
 					created_at: string | null;

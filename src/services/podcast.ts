@@ -62,7 +62,7 @@ export async function getMultiplePodcastById(uuids: string[]) {
 export async function getEpisodeById(
 	uuid: string,
 ): Promise<RSSBasicEpisode | null | undefined> {
-	// "use cache";
+	"use cache";
 
 	try {
 		const episode = await databaseClient.podcast_episodes.findFirst({

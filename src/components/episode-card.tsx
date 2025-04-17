@@ -1,22 +1,15 @@
 "use client";
 
-import {
-	CalendarIcon,
-	CheckCheckIcon,
-	ChevronRightIcon,
-	Clock,
-	ListMusic,
-	Play,
-} from "lucide-react";
+import { CalendarIcon, ChevronRightIcon, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { PodcastSeries } from "~/graphql/generated";
 import type { RSSBasicEpisode } from "~/types/rss-episode";
-import { getDateDistance } from "~/utils/functions";
+import { formatTime, getDateDistance } from "~/utils/functions";
 import { AddToQueueButton } from "./add-to-queue-button";
 import { MarkAsListenedButton } from "./mark-as-listened-button";
 import { PlayButton } from "./play-button";
-import { Button, buttonVariants } from "./ui/button";
+import { buttonVariants } from "./ui/button";
 import {
 	DisplayCard,
 	DisplayCardContent,
@@ -73,10 +66,12 @@ export function EpisodeCard({
 								<PlayButton episode={episode} podcast={podcast} />
 							</div>
 							<div className="mt-1 flex items-center gap-4 text-gray-500 text-sm">
-								<span className="flex items-center gap-1">
-									<Clock className="h-4 w-4" />
-									{episode.itunes_duration}
-								</span>
+								{episode.itunes_duration && (
+									<span className="flex items-center gap-1">
+										<Clock className="h-4 w-4" />
+										{formatTime(episode.itunes_duration)}
+									</span>
+								)}
 								{episode.published && (
 									<span className="flex items-center gap-1">
 										<CalendarIcon className="h-4 w-4" />

@@ -1,5 +1,7 @@
 import { openai } from "@ai-sdk/openai";
-import { streamText } from "ai";
+import { auth } from "@clerk/nextjs/server";
+import { type Message, appendResponseMessages, streamText } from "ai";
+import { databaseClient } from "~/lib/client-database";
 import { analyzePodcastQuery } from "~/lib/tools/analyze-podcast-query";
 import { searchPodcasts } from "~/lib/tools/search-podcasts";
 
@@ -21,11 +23,11 @@ Second option is to help them find podcasts in a specific period of time:
 ----
 
 Always use the tools provided to answer the user's question.
-Always answer with html formatted text.
 `;
 
 export async function POST(req: Request) {
 	const { messages } = await req.json();
+	const { userId } = await auth();
 
 	const result = streamText({
 		model: openai("gpt-4o-mini"),
@@ -36,7 +38,38 @@ export async function POST(req: Request) {
 		},
 		maxSteps: 1,
 		messages,
+		async onFinish({ response }) {
+			await saveChat({
+				userId,
+				messages: appendResponseMessages({
+					messages,
+					responseMessages: response.messages,
+				}),
+			});
+		},
 	});
 
 	return result.toDataStreamResponse();
+}
+
+export async function saveChat({
+	userId,
+	messages,
+}: {
+	userId: string | null;
+	messages: Message[];
+}): Promise<void> {
+	if (!userId) {
+		return;
+	}
+
+	await databaseClient.chat_history.createMany({
+		data: messages.map((message) => ({
+			user_id: userId,
+			message_id: message.id,
+			message: JSON.stringify(message),
+			created_at: message.createdAt ?? new Date(),
+		})),
+		skipDuplicates: true,
+	});
 }

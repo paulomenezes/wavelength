@@ -3,6 +3,7 @@ import { podcastRouter } from "~/server/api/routers/podcast";
 import { subscriptionRouter } from "~/server/api/routers/subscription";
 import { transcriptionRouter } from "~/server/api/routers/transcription";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
+import { chatRouter } from "./routers/chat";
 import { favoritesRouter } from "./routers/favorites";
 import { queueRouter } from "./routers/queue";
 
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
 	subscription: subscriptionRouter,
 	queue: queueRouter,
 	favorites: favoritesRouter,
+	chat: chatRouter,
 });
 
 // export type definition of API

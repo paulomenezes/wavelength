@@ -1,3 +1,4 @@
+import { TrendingUpIcon } from "lucide-react";
 import { Suspense } from "react";
 import { PodcastCard, PodcastCardLoading } from "~/components/podcast-card";
 import { api } from "~/trpc/server";
@@ -6,7 +7,10 @@ export default function CategoriesPage() {
 	return (
 		<>
 			<div className="mt-12 mb-8">
-				<h1 className="mb-2 font-bold text-3xl">Trending</h1>
+				<h1 className="mb-2 flex items-center gap-2 font-bold text-3xl">
+					<TrendingUpIcon className="size-8" />
+					Trending
+				</h1>
 			</div>
 
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
